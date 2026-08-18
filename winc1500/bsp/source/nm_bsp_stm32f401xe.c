@@ -1,7 +1,6 @@
 #include "nm_bsp.h"
 #include "nm_common.h"
 #include "conf_winc.h"
-#include "../../../core/inc/conf_winc.h"
 
 /**
  * @brief Macro enabling the export of static object to unit tests.

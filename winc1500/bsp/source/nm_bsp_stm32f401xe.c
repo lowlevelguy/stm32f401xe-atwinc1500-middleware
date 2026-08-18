@@ -69,7 +69,7 @@ STATIC void module_ctrl_pins_init(void) {
 	gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(CONF_WINC_IRQN_PORT, &gpio_init);
 
-	CONF_WINC_EXTI_REGISTER_ISR(irqn_on_irq);
+	CONF_WINC_EXTI_DEREGISTER_ISR();
 	nm_bsp_interrupt_ctrl(1);
 
 	/* Pin init values (module off):
@@ -92,6 +92,7 @@ STATIC void module_ctrl_pins_init(void) {
  * the user explicitly turns it on via reset.
  */
 sint8 nm_bsp_init(void) {
+	// Reset ISR callback
 	module_irqn_pin_isr = NULL;
 
 	// Ensure the system clock is configured

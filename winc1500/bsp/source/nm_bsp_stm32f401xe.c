@@ -1,6 +1,7 @@
 #include "nm_bsp.h"
 #include "nm_common.h"
 #include "conf_winc.h"
+#include "../../../core/inc/conf_winc.h"
 
 /**
  * @brief Macro enabling the export of static object to unit tests.
@@ -47,19 +48,26 @@ STATIC void module_ctrl_pins_init(void) {
 
 	GPIO_InitTypeDef gpio_init = {0};
 
-	/* Configure CHIP_EN, RESET_N and WAKE (if configured) pins.
-	 * - CHIP_EN, WAKE: active-high
-	 * - RESET_N: active-low */
-#if (CONF_WINC_USE_WAKE_PIN == 1)
-	gpio_init.Pin =
-		CONF_WINC_CHIP_EN_PIN | CONF_WINC_WAKE_PIN | CONF_WINC_RESET_N_PIN;
-#else /* CONF_WINC_USE_WAKE_PIN != 1 */
-	gpio_init.Pin = CONF_WINC_CHIP_EN_PIN | CONF_WINC_RESET_N_PIN;
-#endif
+	// Configure CHIP_EN, RESET_N and WAKE (if configured) pins.
+	gpio_init.Pin = CONF_WINC_CHIP_EN_PIN;
 	gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
 	gpio_init.Pull = GPIO_NOPULL;
 	gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(CONF_WINC_CHIP_EN_PORT, &gpio_init);
+
+	gpio_init.Pin = CONF_WINC_RESET_N_PIN;
+	gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+	gpio_init.Pull = GPIO_NOPULL;
+	gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(CONF_WINC_RESET_N_PORT, &gpio_init);
+
+#if (CONF_WINC_USE_WAKE_PIN == 1)
+	gpio_init.Pin = CONF_WINC_WAKE_PIN;
+	gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+	gpio_init.Pull = GPIO_NOPULL;
+	gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(CONF_WINC_WAKE_PORT, &gpio_init);
+#endif
 
 	/* Configure IRQN pin: active-low.
 	 * Note: we use a pull-up to force the line to high on module power off. */

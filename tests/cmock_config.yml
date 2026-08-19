@@ -7,3 +7,4 @@
         - :ignore_arg
         - :callback
     :fail_on_unexpected_calls: true
+    :when_ptr: :compare_ptr

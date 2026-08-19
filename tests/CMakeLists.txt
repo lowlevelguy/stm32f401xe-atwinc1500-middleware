@@ -66,7 +66,7 @@ function(add_cmock_test)
 			${CMOCK_DIR}/lib/cmock.rb
 			-o${CMAKE_CURRENT_SOURCE_DIR}/cmock_config.yml
 			${MOCK_HEADER}
-			DEPENDS ${MOCK_HEADER}
+			DEPENDS ${MOCK_HEADER} cmock_config.yml
 			WORKING_DIRECTORY ${MOCK_OUTPUT_DIR}
 			COMMENT "CMock: Generating mock for ${MOCK_HEADER}"
 		)
@@ -103,12 +103,21 @@ endfunction()
 
 
 # Adding middleware unit tests
-# Test 1 - smoke test
+# Test 1 - BSP test
 add_cmock_test(
-	NAME middleware_smoke
+	NAME test_middleware_bsp
 	SOURCES
-    	${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_smoke.c
+	${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_bsp.c
+		${CMAKE_SOURCE_DIR}/winc1500/bsp/source/nm_bsp_stm32f401xe.c
 	MOCKS
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/conf_winc.h
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/stm32_hal.h
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/mw_port.h
 	INCLUDES
     	${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers
+		${CMAKE_SOURCE_DIR}/winc1500
+		${CMAKE_SOURCE_DIR}/winc1500/bsp/include
+		${CMAKE_SOURCE_DIR}/winc1500/common/include
+	COMPILE_DEFS
+		BUILD_TESTING
 )

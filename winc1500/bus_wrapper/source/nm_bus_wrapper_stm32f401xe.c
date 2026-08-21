@@ -17,7 +17,11 @@
 
 #ifndef BUILD_TESTING
 #define STATIC static
+#else
+#define STATIC
 #endif
+
+#define UNUSED(x)	((void)(x))
 
 
 /* Public variables ----------------------------------------------------------*/
@@ -161,7 +165,7 @@ sint8 nm_bus_init(void* config) {
 #endif /* CONF_WINC_SPI_USE_DMA */
 
 	/* ---- Configure SPI interface ---- */
-	/* Forcefully override any previous user initialisation to ensure the
+	/* Forcefully overwrite any previous user initialisation to ensure the
 	 * configuration matches what's required by the module. */
 	CONF_WINC_SPI_HANDLE.Instance = CONF_WINC_SPI_INSTANCE;
 	CONF_WINC_SPI_HANDLE.Init.Mode = SPI_MODE_MASTER;

@@ -108,6 +108,7 @@ add_cmock_test(
 	NAME test_middleware_bsp
 	SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_bsp.c
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_externs.c
 		${CMAKE_SOURCE_DIR}/winc1500/bsp/source/nm_bsp_stm32f401xe.c
 	MOCKS
 		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/conf_winc.h
@@ -120,4 +121,27 @@ add_cmock_test(
 		${CMAKE_SOURCE_DIR}/winc1500/common/include
 	COMPILE_DEFS
 		BUILD_TESTING
+)
+
+# Test 2 - Bus Wrapper test
+add_cmock_test(
+	NAME test_middleware_bus_wrapper
+	SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_bus_wrapper.c
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/test_externs.c
+		${CMAKE_SOURCE_DIR}/winc1500/bus_wrapper/source/nm_bus_wrapper_stm32f401xe.c
+	MOCKS
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/conf_winc.h
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/stm32_hal.h
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/mw_port.h
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers/nm_bsp_api.h
+	INCLUDES
+		${CMAKE_CURRENT_SOURCE_DIR}/middleware/dummy_headers
+		${CMAKE_SOURCE_DIR}/winc1500
+		${CMAKE_SOURCE_DIR}/winc1500/bus_wrapper/include
+		${CMAKE_SOURCE_DIR}/winc1500/bsp/include
+		${CMAKE_SOURCE_DIR}/winc1500/common/include
+	COMPILE_DEFS
+		BUILD_TESTING
+		STM32F401xE
 )

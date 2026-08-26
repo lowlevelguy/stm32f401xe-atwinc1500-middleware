@@ -548,8 +548,13 @@ void test_nm_bus_ioctl_on_rw_opcode_forwards_its_second_parameter_to_nm_spi_rw_a
 	mw_port_spi_bus_acquire_Expect();
 	helper_expect_ss_assert();
 	mw_port_spi_sync_prepare_Expect();
+#ifdef CONF_WINC_SPI_USE_DMA
 	HAL_SPI_TransmitReceive_DMA_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
 		tx_buf, rx_buf, sizeof(tx_buf), HAL_OK);
+#else
+	HAL_SPI_TransmitReceive_IT_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
+		tx_buf, rx_buf, sizeof(tx_buf), HAL_OK);
+#endif
 	mw_port_spi_sync_wait_Expect();
 	mw_port_spi_sync_get_error_status_ExpectAndReturn(0);
 	helper_expect_ss_deassert();
@@ -564,8 +569,13 @@ void test_nm_bus_ioctl_on_rw_opcode_forwards_its_second_parameter_to_nm_spi_rw_a
 	mw_port_spi_bus_acquire_Expect();
 	helper_expect_ss_assert();
 	mw_port_spi_sync_prepare_Expect();
+#ifdef CONF_WINC_SPI_USE_DMA
 	HAL_SPI_TransmitReceive_DMA_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
 		tx_buf, rx_buf, sizeof(tx_buf), HAL_OK);
+#else
+	HAL_SPI_TransmitReceive_IT_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
+		tx_buf, rx_buf, sizeof(tx_buf), HAL_OK);
+#endif
 	mw_port_spi_sync_wait_Expect();
 	mw_port_spi_sync_get_error_status_ExpectAndReturn(1);
 	helper_expect_ss_deassert();
@@ -615,8 +625,13 @@ void test_nm_spi_rw_on_null_rx_buffer_transmits_half_duplex(void) {
 	mw_port_spi_bus_acquire_Expect();
 	helper_expect_ss_assert();
 	mw_port_spi_sync_prepare_Expect();
+#ifdef CONF_WINC_SPI_USE_DMA
 	HAL_SPI_Transmit_DMA_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
 		tx_buf, sizeof(tx_buf), HAL_OK);
+#else
+	HAL_SPI_Transmit_IT_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
+		tx_buf, sizeof(tx_buf), HAL_OK);
+#endif
 	mw_port_spi_sync_wait_Expect();
 	mw_port_spi_sync_get_error_status_ExpectAndReturn(0);
 	helper_expect_ss_deassert();
@@ -640,8 +655,13 @@ void test_nm_spi_rw_on_null_tx_buffer_receives_half_duplex(void) {
 	mw_port_spi_bus_acquire_Expect();
 	helper_expect_ss_assert();
 	mw_port_spi_sync_prepare_Expect();
+#ifdef CONF_WINC_SPI_USE_DMA
 	HAL_SPI_Receive_DMA_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
 		rx_buf, sizeof(rx_buf), HAL_OK);
+#else
+	HAL_SPI_Receive_IT_ExpectAndReturn(&CONF_WINC_SPI_HANDLE,
+		rx_buf, sizeof(rx_buf), HAL_OK);
+#endif
 	mw_port_spi_sync_wait_Expect();
 	mw_port_spi_sync_get_error_status_ExpectAndReturn(0);
 	helper_expect_ss_deassert();

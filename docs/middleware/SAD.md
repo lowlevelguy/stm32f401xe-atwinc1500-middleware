@@ -32,7 +32,8 @@ Change history:
 
 | Version | Date       | Description                |
 |---------|------------|----------------------------|
-| 0.1     | 2026-09-15 | Initial draft (Section 1). |
+| 0.1     | 2026-09-20 | Initial draft (Section 1). |
+| 0.2     | 2026-09-22 | Added Section 2.           |
 
 ### 1.2 Purpose
 
@@ -151,7 +152,7 @@ ISO/IEC/IEEE 42010:2022, Clause 6. The mapping is as follows.
 This subsection defines the architecture-description vocabulary used throughout
 the document, as adopted from ISO/IEC/IEEE 42010:2022. The project vocabulary of
 the middleware &mdash; the layers and signals, and the meaning of
-"user-defined" &mdash; is defined once in `SRS.md` §1.4 and is not repeated
+"user-defined" &mdash; is defined once in SRS §1.4 and is not repeated
 here.
 
 | Term                          | Meaning                                                                                                                                           |
@@ -182,3 +183,79 @@ here.
 - Microchip ATWINC1500 module datasheet (DS70005304F, 2025).
 - ATWINC1500 19.7.11 Software API reference manual.
 - ST STM32F401xE reference manual (`RM0368`, Rev 6, January 2025).
+
+## 2. Stakeholders, Perspectives, Concerns and Aspects
+
+This section identifies the stakeholders of the middleware architecture, their
+perspectives, the concerns they hold, and the architectural aspects said
+concerns relate to. The identifiers introduced here are used throughout Sections
+3, 5 and 6.
+
+### 2.1 Stakeholders
+
+Two stakeholders are identified; they are listed below, together with the
+impact of the architecture on each.
+
+| ID    | Role                    | Description                                                                                                                                                                                                                                                                                              |
+|-------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| STK-1 | Integrator              | Authors the user application and the porting implementation, and consumes the middleware through the vendor driver. SRS §1.3.1.1 defines the same role as the user of the middleware. The integrator is kept distinct from the maintainer in principle, as the role for which the middleware is written. |
+| STK-2 | Maintainer and verifier | The middleware's author, who evolves it against future changes of the SRS and executes the verification methods of SRS §4 &mdash; analysis, inspection and host-executed unit tests.                                                                                                                     |
+
+The architecture impacts its stakeholders as follows. For the integrator, it
+confines application-specific behaviour to the porting implementation, so
+that the board and transport abstraction layer need never be modified
+(REQ-USE-01). For the maintainer, it commits the middleware to the ownership
+boundary of the ownership-boundary view (§4.8) and to the host-executed
+verification methods of SRS §4; both constrain how the middleware may evolve.
+
+The roles above are discharged, in this project, by a single individual; the
+integrator role is kept distinct in principle, as it is the role for which
+the middleware is written. The single-author situation is the principal
+resource limitation of the architecting effort; no concern identified in this
+section was left unaddressed on its account.
+
+### 2.2 Perspectives
+
+Three perspectives are identified. 
+
+| ID    | Perspective  | Held by | Concerns            |
+|-------|--------------|---------|---------------------|
+| PER-1 | Integration  | STK-1   | CON-1, CON-2        |
+| PER-2 | Verification | STK-2   | CON-4, CON-5        |
+| PER-3 | Maintenance  | STK-2   | CON-3, CON-5, CON-6 |
+
+The verification and maintenance perspectives share a holder &mdash; the
+maintainer and the verifier are one and the same (STK-2) &mdash; but remain
+distinct: the former asks how the architecture is demonstrated to satisfy the
+SRS, the latter how it can evolve without eroding its boundaries.
+
+### 2.3 Architecture Concerns
+
+Six concerns are identified. Each concern traces to the SRS requirement that
+raises it; where a concern is grounded in this document instead, its source is
+cited directly.
+
+| ID    | Concern            | Statement                                                                                                                                                                                                                          | Held by      | Source                               |
+|-------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|--------------------------------------|
+| CON-1 | Adaptability       | Adapting the middleware to a target application must only require producing a porting implementation.                                                                                                                              | STK-1        | REQ-USE-01                           |
+| CON-2 | Non-intrusiveness  | The middleware must not require changes to the vendor driver or the board and transport abstraction layer, beyond the documented exceptions (SRS §5.1), and must not claim exclusive ownership of the SPI, DMA and EXTI resources. | STK-1, STK-2 | REQ-DES-02, REQ-USE-03               |
+| CON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
+| CON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
+| CON-5 | Traceability       | Every architecture element of this document must trace to the SRS, so that a change of requirements exposes its architectural consequences.                                                                                        | STK-2        | Section 1.2                          |
+| CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.8                                 |
+
+### 2.4 Aspects
+
+Three aspects are identified. No functional aspect is identified, since all
+concerns are the province of SRS §1.2; their architectural answers are given
+under the structural and behavioural aspects.
+
+| ID    | Aspect       | Concerns            | Description                                                                                                 |
+|-------|--------------|---------------------|-------------------------------------------------------------------------------------------------------------|
+| ASP-1 | Structural   | CON-1, CON-2, CON-6 | The decomposition of the middleware into parts, and the boundaries it keeps with its environment.           |
+| ASP-2 | Behavioural  | CON-3, CON-4        | The interaction and dynamic behaviour of those parts over time, exercised on the host through mocked seams. |
+| ASP-3 | Programmatic | CON-5               | How the architecture is expressed and checked as source artefacts: build, tests and traces.                 |
+
+Every concern of Section 2.3 is covered by at least one aspect. The viewpoints
+of Section 3 are formulated over these aspects, and the correspondence between
+concerns and views is recorded in Section 5.

@@ -34,6 +34,7 @@ Change history:
 |---------|------------|----------------------------|
 | 0.1     | 2026-09-20 | Initial draft (Section 1). |
 | 0.2     | 2026-09-22 | Added Section 2.           |
+| 0.3     | 2026-09-25 | Added Section 3.           |
 
 ### 1.2 Purpose
 
@@ -51,7 +52,7 @@ The document is intended to serve three uses:
 - as the object of the architecture-level verification methods planned in the
   SRS, and as a reference for unit-level verification; and
 - as a means of communicating the architecture to the stakeholders identified
-  in Section 2.
+  in §2.
 
 It does not restate the requirements: the SRS is the authority on what the
 middleware shall do, and every architecture element in this document traces to
@@ -188,8 +189,8 @@ here.
 
 This section identifies the stakeholders of the middleware architecture, their
 perspectives, the concerns they hold, and the architectural aspects said
-concerns relate to. The identifiers introduced here are used throughout Sections
-3, 5 and 6.
+concerns relate to. The identifiers introduced here are used throughout §3, §5
+and §6.
 
 ### 2.1 Stakeholders
 
@@ -241,7 +242,7 @@ cited directly.
 | CON-2 | Non-intrusiveness  | The middleware must not require changes to the vendor driver or the board and transport abstraction layer, beyond the documented exceptions (SRS §5.1), and must not claim exclusive ownership of the SPI, DMA and EXTI resources. | STK-1, STK-2 | REQ-DES-02, REQ-USE-03               |
 | CON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
 | CON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
-| CON-5 | Traceability       | Every architecture element of this document must trace to the SRS, so that a change of requirements exposes its architectural consequences.                                                                                        | STK-2        | Section 1.2                          |
+| CON-5 | Traceability       | Every architecture element of this document must trace to the SRS, so that a change of requirements exposes its architectural consequences.                                                                                        | STK-2        | §1.2                                 |
 | CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.8                                 |
 
 ### 2.4 Aspects
@@ -256,6 +257,123 @@ under the structural and behavioural aspects.
 | ASP-2 | Behavioural  | CON-3, CON-4        | The interaction and dynamic behaviour of those parts over time, exercised on the host through mocked seams. |
 | ASP-3 | Programmatic | CON-5               | How the architecture is expressed and checked as source artefacts: build, tests and traces.                 |
 
-Every concern of Section 2.3 is covered by at least one aspect. The viewpoints
-of Section 3 are formulated over these aspects, and the correspondence between
-concerns and views is recorded in Section 5.
+Every concern of §2.3 is covered by at least one aspect. The viewpoints of §3
+are formulated over these aspects, and the correspondence between concerns and
+views is recorded in §5.
+
+## 3. Architecture Viewpoints
+
+This section specifies the three architecture viewpoints that govern the views
+of §4. Each specification states the views it governs, its version, the
+stakeholder perspectives associated with it, the concerns it frames together
+with their aspects and holders, its model kinds, its correspondence methods,
+and its sources. The model kinds are defined once in §3.4 and are
+forward-referenced by the viewpoints.
+
+The three viewpoints are not arbitrary; they are derived from the concerns of
+Section 2.3 and the questions they raise. Likewise, the model kinds used are
+aligned to the needs of the aspects of architecture.
+
+### 3.1 Context and boundaries
+
+This viewpoint considers the middleware as a bounded whole &mdash; what lies
+within it, what lies outside it, and where ownership passes. It governs the
+context (§4.1) and ownership-boundary (§4.8) views.
+
+| Field                    | Specification                                                                                                                                                                          |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                    |
+| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                               |
+| Concerns framed          | CON-2 Non-intrusiveness; CON-5 Traceability; CON-6 Boundary hygiene                                                                                                                    |
+| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                   |
+| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                        |
+| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                 |
+| Correspondence methods   | Boundary consistency, by inspection: the middleware boundary drawn in each view of this viewpoint is one and the same. Concern traceability: elements of a view trace to the SRS (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4.1 for the hardware interfaces at the boundary.                                                                                            |
+
+### 3.2 Static structure
+
+This viewpoint considers the middleware as parts and the contracts between
+them, time abstracted away. It governs the structure and interfaces view (§4.2)
+and the internal decomposition view (§4.3).
+
+| Field                    | Specification                                                                                                                                                                                             |
+|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                                       |
+| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                                                  |
+| Concerns framed          | CON-1 Adaptability; CON-2 Non-intrusiveness; CON-5 Traceability                                                                                                                                           |
+| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                                      |
+| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                           |
+| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                                    |
+| Correspondence methods   | Interface consistency, by inspection: the porting interface appears in §4.2 and §4.3 as one and the same contract, defined by SRS §3.4.2. Concern traceability: elements of a view trace to the SRS (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4 for the interface inventory.                                                                                                                                 |
+
+### 3.3 Interaction and dynamics
+
+This viewpoint considers the middleware as behaviour ordered in time &mdash;
+invocations, notifications and state changes, in thread and interrupt context.
+It governs the bring-up (§4.4), SPI transaction (§4.5), event delivery (§4.6)
+and module power lifecycle (§4.7) views.
+
+| Field                    | Specification                                                                                                                                                                                                                                                                   |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                                                                                                             |
+| Stakeholder perspectives | PER-2 Verification; PER-3 Maintenance                                                                                                                                                                                                                                           |
+| Concerns framed          | CON-3 Concurrency safety; CON-4 Host verifiability; CON-5 Traceability                                                                                                                                                                                                          |
+| Aspects                  | ASP-2 Behavioural; ASP-3 Programmatic                                                                                                                                                                                                                                           |
+| Known stakeholders       | STK-2 Maintainer and verifier                                                                                                                                                                                                                                                   |
+| Model kinds              | Sequence diagram (§3.4.2); state machine diagram (§3.4.3)                                                                                                                                                                                                                       |
+| Correspondence methods   | Context consistency, by inspection: the thread or interrupt annotation of each interaction agrees across the views of this viewpoint. Behaviour traceability: every interaction traces to an SRS requirement, and to a host-executed verification method where one exists (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.1.3 for synchronisation and bus ownership; the WINC1500 API reference for call semantics.                                                                                                                                            |
+
+### 3.4 Model kinds
+
+The model kinds used by the viewpoints above are specified here once. The
+conventions of a model kind are the legend for every view component of that
+kind; the reading notes of §4 add view-specific guidance but do not override
+them.
+
+#### 3.4.1 Block diagram
+
+| Field        | Specification                                                                                                                                                                                                                                                                                                                                                                                                |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Conventions  | A rectangle represents an entity &mdash; a part of the middleware, a layer of its environment, or an external system; nested rectangles represent its decomposition. An «interface» rectangle attached by a line represents a contract; the reading note of each view names the relation a connection encodes (provides, consumes, requires or implements). Colour encodes nothing; it is presentation only. |
+| View methods | Interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                                                                                                                                                                             |
+| Version      | 1.0                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Sources      | Informal conventions adapted from UML 2.x.                                                                                                                                                                                                                                                                                                                                                                   |
+
+#### 3.4.2 Sequence diagram
+
+| Field        | Specification                                                                                                                                                                                                                                                |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Conventions  | A lifeline represents an entity, annotated with the execution context &mdash; thread or interrupt &mdash; in which its events occur. An arrow between lifelines represents an invocation or notification, named by its label; time flows from top to bottom. |
+| View methods | Interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                             |
+| Version      | 1.0                                                                                                                                                                                                                                                          |
+| Sources      | Informal conventions adapted from UML 2.x.                                                                                                                                                                                                                   |
+
+#### 3.4.3 State machine diagram
+
+| Field        | Specification                                                                                                                                                                                                   |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Conventions  | A rounded rectangle represents a state of the entity; an arrow represents a transition, labelled with its trigger &mdash; a call, a pin level or an internal condition. An entry arrow marks the initial state. |
+| View methods | Interpreted by inspection; no formal analysis method is defined.                                                                                                                                                |
+| Version      | 1.0                                                                                                                                                                                                             |
+| Sources      | Informal conventions adapted from UML 2.x.                                                                                                                                                                      |
+
+### 3.5 Coverage
+
+Every concern is framed by at least one viewpoint, and every perspective is
+associated with the viewpoints covering it; the matrix below records both, with
+a row per concern and per perspective.
+
+|       | 3.1 Context and boundaries | 3.2 Static structure | 3.3 Interaction and dynamics |
+|-------|----------------------------|----------------------|------------------------------|
+| CON-1 | &mdash;                    | yes                  | &mdash;                      |
+| CON-2 | yes                        | yes                  | &mdash;                      |
+| CON-3 | &mdash;                    | &mdash;              | yes                          |
+| CON-4 | &mdash;                    | &mdash;              | yes                          |
+| CON-5 | yes                        | yes                  | yes                          |
+| CON-6 | yes                        | &mdash;              | &mdash;                      |
+| PER-1 | yes                        | yes                  | &mdash;                      |
+| PER-2 | yes                        | yes                  | yes                          |
+| PER-3 | yes                        | yes                  | yes                          |

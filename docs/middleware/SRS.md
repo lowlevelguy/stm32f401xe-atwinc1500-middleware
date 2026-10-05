@@ -68,7 +68,7 @@ The middleware lies at the second-most bottom layer of a four-stratum stack:
 4) the STM32 HAL and the porting implementation to perform low-level SPI, DMA
    and GPIO operations
 
-![Inter-Component Interfaces](assets/middleware-component-perspective-2.png)
+![Inter-Component Interfaces](diagrams/middleware-component-perspective-2.png)
 
 ##### 1.3.1.1 User Interface
 

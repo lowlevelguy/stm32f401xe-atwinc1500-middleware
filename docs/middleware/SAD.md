@@ -35,6 +35,7 @@ Change history:
 | 0.1     | 2026-09-20 | Initial draft (Section 1). |
 | 0.2     | 2026-09-22 | Added Section 2.           |
 | 0.3     | 2026-09-25 | Added Section 3.           |
+| 0.4     | 2026-10-05 | Added Section 4.           |
 
 ### 1.2 Purpose
 
@@ -83,8 +84,7 @@ optionally, DMA), synchronisation primitives for thread-safe SPI data transfers,
 and hooks for module-to-host interrupt and SPI event handling.
 
 These parts and the interfaces through which they relate are expressed in the
-internal decomposition view (§4.3) and the structure and interfaces view
-(§4.2).
+structure and interfaces view (§4.2).
 
 #### 1.3.2 Environment
 
@@ -132,7 +132,7 @@ interaction:
   makes no provision for it.
 
 The ownership boundary between the middleware and the vendor driver is expressed
-in the ownership-boundary view (§4.8).
+in the ownership-boundary view (§4.7).
 
 ### 1.5 Document Structure
 
@@ -185,6 +185,25 @@ here.
 - ATWINC1500 19.7.11 Software API reference manual.
 - ST STM32F401xE reference manual (`RM0368`, Rev 6, January 2025).
 
+### 1.8 Conformance
+
+This document claims conformance to ISO/IEC/IEEE 42010:2022 as an architecture
+description, in the first of the five situations of Clause 4: the specification
+of the architecture description meets the requirements listed in Clause 6. No
+tailoring is applied, as Clause 4 permits none for a conformance claim.
+
+§1.5 records the mapping between the sections of this document and the clauses
+of Clause 6. The architecture decisions and their rationale, required by 6.10,
+are recorded in §6.
+
+The standard states its verbal forms in its Introduction &mdash; "shall"
+indicates a requirement, "should" a recommendation, "may" a permission
+&mdash; and scopes them to its own text: it prescribes no vocabulary for the
+content of a conforming architecture description. The concern statements of §2.3
+are therefore worded with "must": they state what a stakeholder desires of the
+architecture, not requirements, which remain the SRS's to state with "shall"
+(§1.2).
+
 ## 2. Stakeholders, Perspectives, Concerns and Aspects
 
 This section identifies the stakeholders of the middleware architecture, their
@@ -206,7 +225,7 @@ The architecture impacts its stakeholders as follows. For the integrator, it
 confines application-specific behaviour to the porting implementation, so
 that the board and transport abstraction layer need never be modified
 (REQ-USE-01). For the maintainer, it commits the middleware to the ownership
-boundary of the ownership-boundary view (§4.8) and to the host-executed
+boundary of the ownership-boundary view (§4.7) and to the host-executed
 verification methods of SRS §4; both constrain how the middleware may evolve.
 
 The roles above are discharged, in this project, by a single individual; the
@@ -243,7 +262,7 @@ cited directly.
 | CON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
 | CON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
 | CON-5 | Traceability       | Every architecture element of this document must trace to the SRS, so that a change of requirements exposes its architectural consequences.                                                                                        | STK-2        | §1.2                                 |
-| CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.8                                 |
+| CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.7                                 |
 
 ### 2.4 Aspects
 
@@ -278,7 +297,7 @@ aligned to the needs of the aspects of architecture.
 
 This viewpoint considers the middleware as a bounded whole &mdash; what lies
 within it, what lies outside it, and where ownership passes. It governs the
-context (§4.1) and ownership-boundary (§4.8) views.
+context (§4.1) and ownership-boundary (§4.7) views.
 
 | Field                    | Specification                                                                                                                                                                          |
 |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -294,8 +313,8 @@ context (§4.1) and ownership-boundary (§4.8) views.
 ### 3.2 Static structure
 
 This viewpoint considers the middleware as parts and the contracts between
-them, time abstracted away. It governs the structure and interfaces view (§4.2)
-and the internal decomposition view (§4.3).
+them, time abstracted away. It governs the structure and interfaces view
+(§4.2).
 
 | Field                    | Specification                                                                                                                                                                                             |
 |--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -305,15 +324,15 @@ and the internal decomposition view (§4.3).
 | Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                                      |
 | Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                           |
 | Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                                    |
-| Correspondence methods   | Interface consistency, by inspection: the porting interface appears in §4.2 and §4.3 as one and the same contract, defined by SRS §3.4.2. Concern traceability: elements of a view trace to the SRS (§5). |
+| Correspondence methods   | Interface consistency, by inspection: the porting interface appears in §4.2 as a single contract, defined by SRS §3.4.2. Concern traceability: elements of a view trace to the SRS (§5). |
 | Sources                  | The standard, Clause 8 and Annex B; SRS §3.4 for the interface inventory.                                                                                                                                 |
 
 ### 3.3 Interaction and dynamics
 
 This viewpoint considers the middleware as behaviour ordered in time &mdash;
 invocations, notifications and state changes, in thread and interrupt context.
-It governs the bring-up (§4.4), SPI transaction (§4.5), event delivery (§4.6)
-and module power lifecycle (§4.7) views.
+It governs the bring-up (§4.3), SPI transaction (§4.4), event delivery (§4.5)
+and module power lifecycle (§4.6) views.
 
 | Field                    | Specification                                                                                                                                                                                                                                                                   |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -335,12 +354,12 @@ them.
 
 #### 3.4.1 Block diagram
 
-| Field        | Specification                                                                                                                                                                                                                                                                                                                                                                                                |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Conventions  | A rectangle represents an entity &mdash; a part of the middleware, a layer of its environment, or an external system; nested rectangles represent its decomposition. An «interface» rectangle attached by a line represents a contract; the reading note of each view names the relation a connection encodes (provides, consumes, requires or implements). Colour encodes nothing; it is presentation only. |
-| View methods | Interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                                                                                                                                                                             |
-| Version      | 1.0                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Sources      | Informal conventions adapted from UML 2.x.                                                                                                                                                                                                                                                                                                                                                                   |
+| Field        | Specification                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Conventions  | A rectangle represents an entity &mdash; a part of the middleware, a layer of its environment, or an external system; nested rectangles represent its decomposition. An «interface» rectangle attached by a line represents a contract; the relation a connection encodes is named by an adjacent label, or by the view's reading note (provides, consumes, requires or implements). Colour encodes nothing; it is presentation only. |
+| View methods | Interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                                                                                                                                                                                                      |
+| Version      | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Sources      | Informal conventions adapted from UML 2.x.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 #### 3.4.2 Sequence diagram
 
@@ -377,3 +396,88 @@ a row per concern and per perspective.
 | PER-1 | yes                        | yes                  | &mdash;                      |
 | PER-2 | yes                        | yes                  | yes                          |
 | PER-3 | yes                        | yes                  | yes                          |
+
+## 4. Architecture Views
+
+This section contains the architecture views of the middleware. Each view is
+governed by an architecture viewpoint, in accordance with §3.5's table.
+
+### 4.1 Context view
+
+Governing viewpoint: Context and boundaries (Section 3).
+
+What the middleware is, and which external entities it interacts with.
+
+![Context view](diagrams/navy/context.svg)
+
+### 4.2 Structure and interfaces view
+
+Governing viewpoint: Static structure (Section 3).
+
+The middleware implements the BSP and bus-wrapper interfaces for the driver:
+the BSP implementation realises the former, the bus-wrapper implementation the
+latter. Both implementations require the porting interface, equally a part of
+the middleware, and implemented by the user application.
+
+![Structure and interfaces view](diagrams/navy/structure.svg)
+
+### 4.3 Bring-up view
+
+Governing viewpoint: Interaction and dynamics (Section 3).
+
+The two externally initiated phases: application-side BSP setup, then
+driver-initiated transport setup and power-on.
+
+![Bring-up view](diagrams/navy/bring-up.svg)
+
+nm_bus_init prepares the transport (DMA when selected, forced SPI mode,
+event-handler registration, SS deasserted) before calling nm_bsp_reset; the
+reset timing is internal. Firmware boot and event plumbing after bus-ready are
+driver concerns.
+
+### 4.4 SPI transaction view
+
+Governing viewpoint: Interaction and dynamics (Section 3).
+
+One nm_spi_rw transaction: the blocking call runs in thread context; completion
+or failure arrives from interrupt context.
+
+![SPI transaction view](diagrams/navy/spi-transaction.svg)
+
+Notifications originate only in interrupt context; waiting occurs only in thread
+context, through the porting-defined mechanism. Both outcomes leave SS
+deasserted and the bus released.
+
+### 4.5 Event delivery view
+
+Governing viewpoint: Interaction and dynamics (Section 3).
+
+Registration happens in thread context; the asynchronous path is entirely in
+interrupt context up to the driver callback.
+
+![Event delivery view](diagrams/navy/event-delivery.svg)
+
+Delivery ends the middleware's part of the story: servicing (HIF counting,
+register traffic, group callbacks) happens later, in thread context, and is
+external to the middleware.
+
+### 4.6 Module power lifecycle view
+
+Governing viewpoint: Interaction and dynamics (Section 3).
+
+States, control-pin levels, and the nm_bsp_* calls that drive the transitions.
+
+![Module power lifecycle view](diagrams/navy/power-lifecycle.svg)
+
+SPI transfers are legal only in RUNNING; they are initiated in thread context
+and notified from interrupt context. Readiness polling after RESET_N goes high,
+and all event servicing, are external to the middleware.
+
+### 4.7 Protocol semantics boundary view
+
+Governing viewpoint: Context and boundaries (Section 3).
+
+The middleware carries bytes and frames the transaction; the driver owns all
+protocol semantics.
+
+![Protocol semantics boundary view](diagrams/navy/ownership.svg)

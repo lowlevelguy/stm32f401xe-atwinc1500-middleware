@@ -30,12 +30,13 @@ the same middleware (`SRS.md`, v1.0).
 
 Change history:
 
-| Version | Date       | Description                |
-|---------|------------|----------------------------|
-| 0.1     | 2026-09-20 | Initial draft (Section 1). |
-| 0.2     | 2026-09-22 | Added Section 2.           |
-| 0.3     | 2026-09-25 | Added Section 3.           |
-| 0.4     | 2026-10-05 | Added Section 4.           |
+| Version | Date       | Description                                                                                                    |
+|---------|------------|----------------------------------------------------------------------------------------------------------------|
+| 0.1     | 2026-09-20 | Initial draft (Section 1).                                                                                     |
+| 0.2     | 2026-09-22 | Added Section 2.                                                                                               |
+| 0.3     | 2026-09-25 | Added Section 3.                                                                                               |
+| 0.4     | 2026-10-05 | Added Section 4.                                                                                               |
+| 0.5     | 2026-10-06 | Added Section 5, and updated Section 3's correspondence methods from SRS hard traceability to SRS consistency. |
 
 ### 1.2 Purpose
 
@@ -56,8 +57,9 @@ The document is intended to serve three uses:
   in §2.
 
 It does not restate the requirements: the SRS is the authority on what the
-middleware shall do, and every architecture element in this document traces to
-it.
+middleware shall do. Where a view addresses an SRS requirement, it identifies
+the relevant source and remains consistent with it; the architecture may
+further constrain choices the SRS leaves open.
 
 ### 1.3 Entity of Interest and Environment
 
@@ -261,7 +263,7 @@ cited directly.
 | CON-2 | Non-intrusiveness  | The middleware must not require changes to the vendor driver or the board and transport abstraction layer, beyond the documented exceptions (SRS §5.1), and must not claim exclusive ownership of the SPI, DMA and EXTI resources. | STK-1, STK-2 | REQ-DES-02, REQ-USE-03               |
 | CON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
 | CON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
-| CON-5 | Traceability       | Every architecture element of this document must trace to the SRS, so that a change of requirements exposes its architectural consequences.                                                                                        | STK-2        | §1.2                                 |
+| CON-5 | Traceability       | Architectural claims that address an SRS requirement must identify the relevant requirement, so that changes expose the affected views; the architecture may further constrain choices the SRS leaves open.                          | STK-2        | §1.2                                 |
 | CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.7                                 |
 
 ### 2.4 Aspects
@@ -274,7 +276,7 @@ under the structural and behavioural aspects.
 |-------|--------------|---------------------|-------------------------------------------------------------------------------------------------------------|
 | ASP-1 | Structural   | CON-1, CON-2, CON-6 | The decomposition of the middleware into parts, and the boundaries it keeps with its environment.           |
 | ASP-2 | Behavioural  | CON-3, CON-4        | The interaction and dynamic behaviour of those parts over time, exercised on the host through mocked seams. |
-| ASP-3 | Programmatic | CON-5               | How the architecture is expressed and checked as source artefacts: build, tests and traces.                 |
+| ASP-3 | Programmatic | CON-5               | How architecture claims are related to relevant SRS material and checked for consistency within the description. |
 
 Every concern of §2.3 is covered by at least one aspect. The viewpoints of §3
 are formulated over these aspects, and the correspondence between concerns and
@@ -299,16 +301,16 @@ This viewpoint considers the middleware as a bounded whole &mdash; what lies
 within it, what lies outside it, and where ownership passes. It governs the
 context (§4.1) and ownership-boundary (§4.7) views.
 
-| Field                    | Specification                                                                                                                                                                          |
-|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Version                  | 1.0                                                                                                                                                                                    |
-| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                               |
-| Concerns framed          | CON-2 Non-intrusiveness; CON-5 Traceability; CON-6 Boundary hygiene                                                                                                                    |
-| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                   |
-| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                        |
-| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                 |
-| Correspondence methods   | Boundary consistency, by inspection: the middleware boundary drawn in each view of this viewpoint is one and the same. Concern traceability: elements of a view trace to the SRS (§5). |
-| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4.1 for the hardware interfaces at the boundary.                                                                                            |
+| Field                    | Specification                                                                                                                                                                                                                                                                       |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                                                                                                                 |
+| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                                                                                                                            |
+| Concerns framed          | CON-2 Non-intrusiveness; CON-5 Traceability; CON-6 Boundary hygiene                                                                                                                                                                                                                 |
+| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                                                                                                                |
+| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                     |
+| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                                                                                                              |
+| Correspondence methods   | Boundary consistency, by inspection: the middleware boundary drawn in each view of this viewpoint is one and the same. SRS consistency: claims related to SRS material are checked for contradiction; architectural refinements of choices left open by the SRS are permitted (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4.1 for the hardware interfaces at the boundary.                                                                                                                                                                                         |
 
 ### 3.2 Static structure
 
@@ -316,16 +318,16 @@ This viewpoint considers the middleware as parts and the contracts between
 them, time abstracted away. It governs the structure and interfaces view
 (§4.2).
 
-| Field                    | Specification                                                                                                                                                                                             |
-|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Version                  | 1.0                                                                                                                                                                                                       |
-| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                                                  |
-| Concerns framed          | CON-1 Adaptability; CON-2 Non-intrusiveness; CON-5 Traceability                                                                                                                                           |
-| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                                      |
-| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                           |
-| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                                    |
-| Correspondence methods   | Interface consistency, by inspection: the porting interface appears in §4.2 as a single contract, defined by SRS §3.4.2. Concern traceability: elements of a view trace to the SRS (§5). |
-| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4 for the interface inventory.                                                                                                                                 |
+| Field                    | Specification                                                                                                                                                                                                                                                                         |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                                                                                                                   |
+| Stakeholder perspectives | PER-1 Integration; PER-2 Verification; PER-3 Maintenance                                                                                                                                                                                                                              |
+| Concerns framed          | CON-1 Adaptability; CON-2 Non-intrusiveness; CON-5 Traceability                                                                                                                                                                                                                       |
+| Aspects                  | ASP-1 Structural; ASP-3 Programmatic                                                                                                                                                                                                                                                  |
+| Known stakeholders       | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                       |
+| Model kinds              | Block diagram (§3.4.1)                                                                                                                                                                                                                                                                |
+| Correspondence methods   | Interface consistency, by inspection: the porting interface appears in §4.2 as a single contract, defined by SRS §3.4.2. SRS consistency: claims related to SRS material are checked for contradiction; architectural refinements of choices left open by the SRS are permitted (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.4 for the interface inventory.                                                                                                                                                                                                             |
 
 ### 3.3 Interaction and dynamics
 
@@ -334,16 +336,16 @@ invocations, notifications and state changes, in thread and interrupt context.
 It governs the bring-up (§4.3), SPI transaction (§4.4), event delivery (§4.5)
 and module power lifecycle (§4.6) views.
 
-| Field                    | Specification                                                                                                                                                                                                                                                                   |
-|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Version                  | 1.0                                                                                                                                                                                                                                                                             |
-| Stakeholder perspectives | PER-2 Verification; PER-3 Maintenance                                                                                                                                                                                                                                           |
-| Concerns framed          | CON-3 Concurrency safety; CON-4 Host verifiability; CON-5 Traceability                                                                                                                                                                                                          |
-| Aspects                  | ASP-2 Behavioural; ASP-3 Programmatic                                                                                                                                                                                                                                           |
-| Known stakeholders       | STK-2 Maintainer and verifier                                                                                                                                                                                                                                                   |
-| Model kinds              | Sequence diagram (§3.4.2); state machine diagram (§3.4.3)                                                                                                                                                                                                                       |
-| Correspondence methods   | Context consistency, by inspection: the thread or interrupt annotation of each interaction agrees across the views of this viewpoint. Behaviour traceability: every interaction traces to an SRS requirement, and to a host-executed verification method where one exists (§5). |
-| Sources                  | The standard, Clause 8 and Annex B; SRS §3.1.3 for synchronisation and bus ownership; the WINC1500 API reference for call semantics.                                                                                                                                            |
+| Field                    | Specification                                                                                                                                                                                                                                            |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                  | 1.0                                                                                                                                                                                                                                                      |
+| Stakeholder perspectives | PER-2 Verification; PER-3 Maintenance                                                                                                                                                                                                                    |
+| Concerns framed          | CON-3 Concurrency safety; CON-4 Host verifiability; CON-5 Traceability                                                                                                                                                                                   |
+| Aspects                  | ASP-2 Behavioural; ASP-3 Programmatic                                                                                                                                                                                                                    |
+| Known stakeholders       | STK-2 Maintainer and verifier                                                                                                                                                                                                                            |
+| Model kinds              | Sequence diagram (§3.4.2); state machine diagram (§3.4.3)                                                                                                                                                                                                |
+| Correspondence methods   | Context consistency, by inspection: the thread or interrupt annotation of each interaction agrees across the views of this viewpoint. Requirement consistency: interactions are related to relevant SRS requirements and checked for contradiction (§5). |
+| Sources                  | The standard, Clause 8 and Annex B; SRS §3.1.3 for synchronisation and bus ownership; the WINC1500 API reference for call semantics.                                                                                                                     |
 
 ### 3.4 Model kinds
 
@@ -481,3 +483,46 @@ The middleware carries bytes and frames the transaction; the driver owns all
 protocol semantics.
 
 ![Protocol semantics boundary view](diagrams/navy/ownership.svg)
+
+## 5. Architecture Correspondences
+
+This section documents the relationships between different elements of the
+views, as well as the mapping of said views onto the SRS. Where a particular
+rule is incumbent to enforce or check these relationships, it is also specified.
+
+### 5.1 Consistency within the AD
+
+As varying levels of overlap exist between the different elements of this
+architecture description, one primary concern for is to ensure consistency and
+that no contradictions take place.
+
+| Correspondence      | Elements compared                                                                                       | Consistency rule                                                                                                                                                                              |
+|---------------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Middleware boundary | Context (§4.1), structure and interfaces (§4.2), and protocol semantics boundary (§4.7) views           | The parts inside the middleware boundary, and the entities outside it, agree across all three views.                                                                                          |
+| Porting contract    | Structure and interfaces view (§4.2) and EoI description (§1.3.1)                                       | The porting interface shown as required by the middleware and implemented by the user application agrees with the interface described in §1.3.1.                                              |
+| Execution context   | Bring-up (§4.3), SPI transaction (§4.4), event delivery (§4.5), and module power lifecycle (§4.6) views | Thread and interrupt responsibilities agree wherever the same operation or notification appears.                                                                                              |
+| Transfer lifecycle  | SPI transaction (§4.4) and module power lifecycle (§4.6) views                                          | The transaction sequence and the lifecycle view agree that transfers occur only while the module is running, and that completion or failure is reported before the transfer releases the bus. |
+
+### 5.2 View-to-requirement correspondences
+
+Each view maps onto a part of the SRS it must not contradict, in the manner
+described below. The `REQ-` acronyms are imported from the SRS's terminology,
+serving as identifiers for the requirements defined therein.
+
+| View                               | Corresponding SRS requirements                   |
+|------------------------------------|--------------------------------------------------|
+| Context (§4.1)                     | SRS §1.2–1.3, 3.4                                |
+| Structure and interfaces (§4.2)    | REQ-USE-01; REQ-IF-05–11; REQ-DES-01, REQ-DES-03 |
+| Bring-up (§4.3)                    | REQ-FUN-01–02,12–18                              |
+| SPI transaction (§4.4)             | REQ-FUN-32,34–38; REQ-IF-08–09; REQ-ATTR-01,03   |
+| Event delivery (§4.5)              | REQ-FUN-10,16, REQ-FUN-38; REQ-IF-06–07          |
+| Module power lifecycle (§4.6)      | REQ-FUN-01–02, REQ-FUN-07–08,18                  |
+| Protocol semantics boundary (§4.7) | SRS §1.2, 3.1.2; REQ-DES-01,03                   |
+
+### 5.3 Correspondence methods
+
+The consistency rules of §5.1 and the SRS correspondences of §5.2 are assessed
+by inspection. A view must not contradict the relevant SRS material, but it may
+constrain a design choice that the SRS leaves open. Such additional
+architectural decisions and their rationale are recorded in §6. No formal
+analysis method is defined for these correspondences.

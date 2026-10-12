@@ -1,5 +1,5 @@
 # Software Architecture Description: STM32F401xE-WINC1500 Middleware
-Version 0.1.
+Version 1.0.
 
 ## 1. Identification and Overview
 
@@ -17,9 +17,9 @@ the same middleware (`SRS.md`, v1.0).
 |--------------------------|--------------------------------------------------------------------|
 | Document title           | Software Architecture Description: STM32F401xE-WINC1500 Middleware |
 | Document identifier      | SAD-MW-001                                                         |
-| Version                  | 0.1                                                                |
+| Version                  | 1.0                                                                |
 | Status                   | Draft                                                              |
-| Date of issue            | 2026-09-15                                                         |
+| Date of issue            | 2026-10-12                                                         |
 | Author                   | lowlevelguy                                                        |
 | Reviewers                | None                                                               |
 | Approving authority      | The author                                                         |
@@ -37,6 +37,7 @@ Change history:
 | 0.3     | 2026-09-25 | Added Section 3.                                                                                               |
 | 0.4     | 2026-10-05 | Added Section 4.                                                                                               |
 | 0.5     | 2026-10-06 | Added Section 5, and updated Section 3's correspondence methods from SRS hard traceability to SRS consistency. |
+| 1.0     | 2026-10-12 | Added Section 6. The SAD is now complete.                                                                      |
 
 ### 1.2 Purpose
 
@@ -263,7 +264,7 @@ cited directly.
 | CON-2 | Non-intrusiveness  | The middleware must not require changes to the vendor driver or the board and transport abstraction layer, beyond the documented exceptions (SRS §5.1), and must not claim exclusive ownership of the SPI, DMA and EXTI resources. | STK-1, STK-2 | REQ-DES-02, REQ-USE-03               |
 | CON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
 | CON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
-| CON-5 | Traceability       | Architectural claims that address an SRS requirement must identify the relevant requirement, so that changes expose the affected views; the architecture may further constrain choices the SRS leaves open.                          | STK-2        | §1.2                                 |
+| CON-5 | Traceability       | Architectural claims that address an SRS requirement must identify the relevant requirement, so that changes expose the affected views; the architecture may further constrain choices the SRS leaves open.                        | STK-2        | §1.2                                 |
 | CON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | §4.7                                 |
 
 ### 2.4 Aspects
@@ -272,10 +273,10 @@ Three aspects are identified. No functional aspect is identified, since all
 concerns are the province of SRS §1.2; their architectural answers are given
 under the structural and behavioural aspects.
 
-| ID    | Aspect       | Concerns            | Description                                                                                                 |
-|-------|--------------|---------------------|-------------------------------------------------------------------------------------------------------------|
-| ASP-1 | Structural   | CON-1, CON-2, CON-6 | The decomposition of the middleware into parts, and the boundaries it keeps with its environment.           |
-| ASP-2 | Behavioural  | CON-3, CON-4        | The interaction and dynamic behaviour of those parts over time, exercised on the host through mocked seams. |
+| ID    | Aspect       | Concerns            | Description                                                                                                      |
+|-------|--------------|---------------------|------------------------------------------------------------------------------------------------------------------|
+| ASP-1 | Structural   | CON-1, CON-2, CON-6 | The decomposition of the middleware into parts, and the boundaries it keeps with its environment.                |
+| ASP-2 | Behavioural  | CON-3, CON-4        | The interaction and dynamic behaviour of those parts over time, exercised on the host through mocked seams.      |
 | ASP-3 | Programmatic | CON-5               | How architecture claims are related to relevant SRS material and checked for consistency within the description. |
 
 Every concern of §2.3 is covered by at least one aspect. The viewpoints of §3
@@ -526,3 +527,20 @@ by inspection. A view must not contradict the relevant SRS material, but it may
 constrain a design choice that the SRS leaves open. Such additional
 architectural decisions and their rationale are recorded in §6. No formal
 analysis method is defined for these correspondences.
+
+## 6. Architecture Decisions and Rationale
+
+This section records the architecture decisions that the SRS leaves open.
+Decisions that the SRS encodes as requirements, together with their
+rationale, are recorded in the SRS and are not repeated here.
+
+Six such decisions are identified.
+
+| ID     | Decision                                                                                                                                        | Rationale and traceability                                                                                                                                                                                                                                                                                                                                                                                                                  |
+|--------|-------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DEC-01 | Retain optional support for the WAKE pin as a control signal, enabled or disabled via a compile-time switch.                                    | The WAKE signal is neither required by the SRS, nor used by the module's firmware version of interest. However, the module datasheet recommend wiring it for future-proofing (section 2.2, note 2), and so we provide optional support for it. Still, due the datasheet not explicitly determining its placement within sequential procedures (e.g., reset sequence), there is a level of ambiguity as to the implementation. CON-1, CON-2. |
+| DEC-02 | Express the entire porting interface as compile-time hooks, in the form of preprocessor macros in a single header file.                         | A fully compile-time interface gives the integrator one adaptation model (edit the configuration header, rebuild), lets the compiler eliminate unconfigured code paths such as the DMA and interrupt-driven transfer alternatives, and avoids the indirection and registration costs of runtime binding. CON-1.                                                                                                                             |
+| DEC-03 | Vendor-contract functionality for which the SRS states no requirement is implemented as an empty stub.                                          | REQ-DES-01 requires the vendor interfaces to be implemented exactly as declared, so every vendor-declared symbol must exist; on the other hand, functionalities left out by the SRS are unused by the driver, hence the minimal solution that responds to the requirements is empty stubs.                                                                                                                                                  |
+| DEC-04 | The middleware's interrupt handlers only act on an interrupt event after verifying that it originates from a source relevant to it.             | As multiple hardware peripherals may occasionally share a single interrupt path (e.g., GPIO pins 5 through 9 share a single path through `EXTI5_9`), validating the interrupt sources allows the integrator freedom to still use peripherals parallel to those used by the middleware. CON-3.                                                                                                                                               |
+| DEC-05 | The middleware trusts the driver to respect the advertised maximum transfer size; it neither enforces the limit nor fragments transfers itself. | The vendor contract (and the SRS by extension) requires advertising a value of maximum transfer size; it is hence reasonable to expect the driver to respect, as it would make no sense to advertise it otherwise. Indeed, the driver verifiably chunks its requests to said size before initiating transfers. CON-6.                                                                                                                       |
+| DEC-06 | In any transfer path, the SPI peripheral is enabled before the slave select signal is asserted.                                                 | The HAL transmit/receive calls enable the SPI peripheral internally before initiating transfers. However, if slave select is asserted before that, there is risk that the module interprets the garbage data line levels, before the host's SPI peripheral is up, as incoming data.                                                                                                                                                         |

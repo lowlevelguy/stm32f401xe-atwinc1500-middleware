@@ -30,9 +30,10 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 
 Change history:
 
-| Version | Date       | Description                                    |
-|---------|------------|------------------------------------------------|
-| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).    |
+| Version | Date       | Description                                                                                |
+|---------|------------|--------------------------------------------------------------------------------------------|
+| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                |
+| 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns. |
 
 ### 1.2 Purpose
 
@@ -122,19 +123,30 @@ and interaction:
   SRS excludes from its verification scope; the SDD therefore makes no provision
   for it.
 
-### 1.5 References
+### 1.5 Document Structure
+
+The document follows the software design description content requirements of
+IEEE Std 1016-2009, Clause 4. The mapping is as follows; it covers the sections
+elaborated so far and will be extended as §3 to §5 are written.
+
+| Section | Title                            | 1016-2009 clause |
+|---------|----------------------------------|------------------|
+| 1       | Identification and Overview      | 4.2              |
+| 2       | Design Stakeholders and Concerns | 4.3              |
+
+### 1.6 References
 
 - [Software Architecture Description: STM32F401xE-WINC1500 Middleware](SAD.md),
   v1.0.
 - [Software Requirements Specification: STM32F401xE-WINC1500 Middleware](SRS.md),
   v1.0.
-- IEEE 1016-2009, *IEEE Standard for Information Technology — Systems Design —
-  Software Design Descriptions*.
+- IEEE Std 1016-2009, *IEEE Standard for Information Technology &mdash; Systems
+  Design &mdash; Software Design Descriptions*.
 - Microchip ATWINC1500 module datasheet (`DS70005304F`, 2025).
 - ATWINC1500 19.7.11 software API reference manual.
 - ST STM32F401xE reference manual (`RM0368`, Rev 6, January 2025).
 
-### 1.6 Glossary
+### 1.7 Glossary
 
 This glossary defines the IEEE 1016 design-description vocabulary used in this
 document. Project terms, including BSP, bus wrapper, porting interface and
@@ -155,3 +167,51 @@ SAD §1.6 and are not repeated here.
 | Design subject      | The middleware described by this SDD. IEEE Std 1016-2009 uses this term in its design vocabulary.                                            |
 | Design view         | A representation comprising design elements that addresses concerns from a specified design viewpoint.                                       |
 | Design viewpoint    | The specification of the elements and conventions available for constructing and using a design view.                                        |
+
+## 2. Design Stakeholders and Concerns
+
+This section identifies the design stakeholders of the middleware and the design
+concerns they hold. The identifiers introduced here are used throughout §3, §4
+and §5.
+
+### 2.1 Design Stakeholders
+
+Two design stakeholders are identified; the same ones identified in the SAD as
+architecture stakeholders.
+
+| ID    | Role                    | Description                                                                                                                                                                                                                                                                                              |
+|-------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| STK-1 | Integrator              | Authors the user application and the porting implementation, and consumes the middleware through the vendor driver. SRS §1.3.1.1 defines the same role as the user of the middleware. The integrator is kept distinct from the maintainer in principle, as the role for which the middleware is written. |
+| STK-2 | Maintainer and verifier | The middleware's author, who evolves it against future changes of the SRS and executes the verification methods of SRS §4 &mdash; analysis, inspection and host-executed unit tests.                                                                                                                     |
+
+The design fixes, for the integrator, the porting interface as the sole
+adaptation surface, such that the board and transport abstraction layer need
+never be modified (REQ-USE-01). For the maintainer, it specifies the design
+entities and their contracts so that the host-executed unit tests of SRS §4 can
+verify them, and records the design decisions the architecture left open (§5);
+both constrain how the middleware may evolve.
+
+The roles above are discharged, in this project, by a single individual; the
+integrator role is kept distinct in principle, as it is the role for which the
+middleware is written. The single-author situation is the principal resource
+limitation of the design effort, and no design concern identified in this
+section was left unaddressed on its account.
+
+### 2.2 Design Concerns
+
+Six design concerns are identified. Each concern is presented along with
+statement, the shareholders that behold it, and the source that grounds it.
+
+The concerns presented are identical to those identified in SAD §2.3. Their
+statements are sometimes slightly modified to adapt to the purposes of design,
+but are otherwise copied verbatim from the SAD &mdash; even the order is kept
+intact.
+
+| ID     | Design concern     | Statement                                                                                                                                                                                                                          | Held by      | Source                               |
+|--------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|--------------------------------------|
+| DCON-1 | Adaptability       | Adapting the middleware to a target application must only require producing a porting implementation.                                                                                                                              | STK-1        | REQ-USE-01                           |
+| DCON-2 | Non-intrusiveness  | The middleware must not require changes to the vendor driver or the board and transport abstraction layer, beyond the documented exceptions (SRS §5.1), and must not claim exclusive ownership of the SPI, DMA and EXTI resources. | STK-1, STK-2 | REQ-DES-02, REQ-USE-03               |
+| DCON-3 | Concurrency safety | SPI data transfers must be performed from the invoking thread context only; access to internally shared state must be regulated in a thread-safe manner; and blocking waits must return only on transfer completion or failure.    | STK-2        | REQ-ATTR-01, REQ-ATTR-03, REQ-FUN-37 |
+| DCON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
+| DCON-5 | Traceability       | Design claims that address an SRS requirement or architectural element must identify it, so that changes expose the affected views; the design may constrain choices the SRS and SAD leave open, but it may not contradict either. | STK-2        | §1.2                                 |
+| DCON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | SAD §4.7                             |

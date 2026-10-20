@@ -17,7 +17,7 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 |--------------------------|----------------------------------------------------------------------------------------------------------|
 | Document title           | Software Design Description: STM32F401xE-WINC1500 Middleware                                             |
 | Document identifier      | SDD-MW-001                                                                                               |
-| Version                  | 0.3                                                                                                      |
+| Version                  | 0.4                                                                                                      |
 | Status                   | Draft                                                                                                    |
 | Date of issue            | 2026-10-20                                                                                               |
 | Author                   | lowlevelguy                                                                                              |
@@ -35,6 +35,7 @@ Change history:
 | 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                |
 | 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns. |
 | 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                              |
+| 0.4     | 2026-10-20 | Section 4: design views.                                                                   |
 
 ### 1.2 Purpose
 
@@ -128,20 +129,21 @@ and interaction:
 
 The document is structured following the software design description content
 requirements of IEEE Std 1016-2009, Clause 4; the mapping is as follows and is
-extended as §4 and §5 are written.
+extended as §5 is written.
 
 | Section | Title                            | IEEE Std 1016-2009 clause |
 |---------|----------------------------------|---------------------------|
 | 1       | Identification and Overview      | 4.2                       |
 | 2       | Design Stakeholders and Concerns | 4.3                       |
 | 3       | Design Viewpoints                | 4.5, 4.9                  |
+| 4       | Design Views                     | 4.4, 4.6                  |
 
 ### 1.6 References
 
 - [Software Architecture Description: STM32F401xE-WINC1500 Middleware](SAD.md),
   v1.0.
-- [Software Requirements Specification: STM32F401xE-WINC1500 Middleware](SRS.md),
-  v1.0.
+- [Software Requirements Specification: STM32F401xE-WINC1500
+  Middleware](SRS.md), v1.0.
 - IEEE Std 1016-2009, *IEEE Standard for Information Technology &mdash; Systems
   Design &mdash; Software Design Descriptions*.
 - Microchip ATWINC1500 module datasheet (`DS70005304F`, 2025).
@@ -247,19 +249,19 @@ semantics boundary view (§4.2).
 ### 3.2 Contracts
 
 This viewpoint considers the contracts the design subject implements, consumes
-or defines. It governs the porting interface view (§4.3) and the driver-facing
+or defines. It governs the porting interface view (§4.3) and the refined driver
 contract view (§4.4).
 
-| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Views governed                        | Porting interface view (§4.3); driver-facing contract view (§4.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Concerns framed                       | DCON-1 Adaptability; DCON-2 Non-intrusiveness; DCON-5 Traceability; DCON-6 Boundary hygiene                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Known stakeholders                    | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Design elements                       | The interface entity types: the driver-facing operations the middleware implements (`nm_bsp_*`, `nm_bus_*` and `nm_spi_rw`), the capabilities instance it advertises (`egstrNmBusCapabilities`), and the porting interface it consumes, the `CONF_WINC_*` configuration macros, bound in the host-executed tests to the `mw_port_*` operations. Their attribute types: signature, return code, parameter semantics, and resource binding &mdash; the SPI instance, the DMA streams, the EXTI line and the GPIO pins. Their constraint types: the forced SPI configuration, manual Slave Select, the read/write-only driver interface, and the `u16MaxTrxSz` capability. |
-| Design languages                      | Structured English prose; the interface-contract table notation (§3.5); and the block diagram notation of SAD §3.4, incorporated by reference and reused verbatim where a view embeds one.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Correspondence and evaluation methods | Interface consistency, by inspection: each operation appears in every view in which it occurs with the same signature, return code and semantics. SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The views of this viewpoint are interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                                                  |
-| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SRS §3.1 and §3.4 for the interface inventory; SAD §4.2 for the architectural contracts this design refines, and §6 (DEC-02) for the porting interface as compile-time hooks.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Views governed                        | Porting interface view (§4.3); refined driver contract view (§4.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Concerns framed                       | DCON-1 Adaptability; DCON-2 Non-intrusiveness; DCON-5 Traceability; DCON-6 Boundary hygiene                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Known stakeholders                    | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Design elements                       | The interface entity types: the driver-facing operations the middleware implements (`nm_bsp_*`, `nm_bus_*` and `nm_spi_rw`), the capabilities instance it advertises (`egstrNmBusCapabilities`), and the porting interface it consumes, the `CONF_WINC_*` configuration macros. Their attribute types: signature, return code, parameter semantics, and resource binding &mdash; the SPI instance, the DMA streams, the EXTI line and the GPIO pins. Their constraint types: the forced SPI configuration, manual Slave Select, the read/write-only driver interface, and the `u16MaxTrxSz` capability. |
+| Design languages                      | Structured English prose; the interface-contract table notation (§3.5); and the block diagram notation of SAD §3.4, incorporated by reference and reused verbatim where a view embeds one.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Correspondence and evaluation methods | Interface consistency, by inspection: each operation appears in every view in which it occurs with the same signature, return code and semantics. SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The views of this viewpoint are interpreted by inspection; no formal analysis method is defined.                                                                                                                                                  |
+| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SRS §3.1 and §3.4 for the interface inventory; SAD §4.2 for the architectural contracts this design refines, and §6 (DEC-02) for the porting interface as compile-time hooks.                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ### 3.3 Interaction
 
@@ -328,3 +330,198 @@ SRS and SAD sources.
 | DCON-4 | &mdash;                         | &mdash;       | yes             | yes                |
 | DCON-5 | yes                             | yes           | yes             | yes                |
 | DCON-6 | yes                             | yes           | &mdash;         | &mdash;            |
+
+## 4. Design Views
+
+This section contains the design views of the middleware. Each view is governed
+by a design viewpoint, in accordance with §3.6's table, and closes with mention
+of the SAD material it refines and the SRS requirements it must satisfy.
+
+### 4.1 Decomposition
+
+This view shows the design subject decomposed into its two implementation
+units, the relationships that bind those units to the vendor driver and to the
+porting interface, and the private helpers they own.
+
+![Structure and interfaces view](diagrams/navy/structure.svg)
+
+The design subject contains two implementation units: the BSP implementation
+unit, `nm_bsp_stm32f401xe.c`; and the bus-wrapper implementation unit,
+`nm_bus_wrapper_stm32f401xe.c`, for the SPI part of the interface.
+
+Each unit defines helper functions; all are `static` except `irqn_on_irq`,
+which the porting interface installs as the EXTI handler:
+
+| Helper                  | Unit        | Responsibility                                                                                                                      |
+|-------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `module_ctrl_pins_init` | BSP         | Configures the CHIP_EN, RESET_N and IRQN GPIOs, the WAKE pin when enabled, and drives the control pins to their powered-off levels. |
+| `irqn_on_irq`           | BSP         | EXTI callback: filters on the IRQN pin and invokes the registered driver ISR.                                                       |
+| `spi_assert_ss`         | Bus wrapper | Drives SS low.                                                                                                                      |
+| `spi_deassert_ss`       | Bus wrapper | Drives SS high.                                                                                                                     |
+| `spi_on_irq_success`    | Bus wrapper | Filters on the SPI instance and signals transfer completion.                                                                        |
+| `spi_on_irq_error`      | Bus wrapper | Filters on the SPI instance and signals transfer failure.                                                                           |
+
+Source: SAD §4.2, §4.7; requirements: REQ-USE-01, REQ-DES-01, REQ-DES-03,
+REQ-IF-05–11.
+
+### 4.2 Protocol semantics boundary
+
+This view shows where the middleware's byte transport ends and the vendor
+driver's protocol semantics begin.
+
+![Protocol semantics boundary view](diagrams/navy/ownership.svg)
+
+A related constraint belongs to the same boundary. The capabilities instance
+advertises a maximum transfer size, and the middleware trusts the driver to
+respect it: it neither enforces the limit nor fragments transfers itself
+(DEC-05).
+
+Source: SAD §4.7; requirements: SRS §1.2, SRS §3.1.2, REQ-DES-01, REQ-DES-03.
+
+### 4.3 Porting interface
+
+This view shows the porting interface as the inventory of `CONF_WINC_*`
+macros, with the form each must take:
+
+| Macro                                | Kind          | Required form                         | Meaning                                                           |
+|--------------------------------------|---------------|---------------------------------------|-------------------------------------------------------------------|
+| `CONF_WINC_DEBUG`                    | value         | `0` or `1`                            | Enables the debug output of the common layer when 1               |
+| `CONF_WINC_PRINTF`                   | function-like | printf-style variadic                 | Debug output sink; its return value is ignored                    |
+| `CONF_WINC_SYSTEM_CLOCK_INIT`        | function-like | `void (void)`                         | Configures the system clock                                       |
+| `CONF_WINC_IRQN_PORT`                | value         | `GPIO_TypeDef*`                       | GPIO port of IRQN                                                 |
+| `CONF_WINC_IRQN_PIN`                 | value         | `uint16`                              | GPIO pin of IRQN                                                  |
+| `CONF_WINC_CHIP_EN_PORT`             | value         | `GPIO_TypeDef*`                       | GPIO port of CHIP_EN                                              |
+| `CONF_WINC_CHIP_EN_PIN`              | value         | `uint16`                              | GPIO pin of CHIP_EN                                               |
+| `CONF_WINC_RESET_N_PORT`             | value         | `GPIO_TypeDef*`                       | GPIO port of RESET_N                                              |
+| `CONF_WINC_RESET_N_PIN`              | value         | `uint16`                              | GPIO pin of RESET_N                                               |
+| `CONF_WINC_USE_WAKE_PIN`             | value         | `0` or `1`                            | Enables the WAKE pin when 1                                       |
+| `CONF_WINC_WAKE_PORT`                | value         | `GPIO_TypeDef*`                       | GPIO port of WAKE                                                 |
+| `CONF_WINC_WAKE_PIN`                 | value         | `uint16`                              | GPIO pin of WAKE                                                  |
+| `CONF_WINC_IRQN_EXTI_LINE`           | value         | `IRQn_Type`                           | EXTI/NVIC line serving IRQN                                       |
+| `CONF_WINC_EXTI_REGISTER_ISR`        | function-like | `void (void (*)(uint16_t))`           | Installs the EXTI callback                                        |
+| `CONF_WINC_EXTI_DEREGISTER_ISR`      | function-like | `void (void)`                         | Clears the EXTI callback                                          |
+| `CONF_WINC_USE_SPI`                  | selector      | &mdash;                               | Selects the SPI transport                                         |
+| `CONF_WINC_SPI_USE_DMA`              | selector      | &mdash;                               | Selects DMA transfers                                             |
+| `CONF_WINC_SPI_HANDLE`               | object        | `SPI_HandleTypeDef`                   | SPI handle used by the middleware                                 |
+| `CONF_WINC_SPI_INSTANCE`             | value         | `uint32`                              | SPI instance identifier of that handle                            |
+| `CONF_WINC_SPI_IRQN`                 | value         | `IRQn_Type`                           | NVIC interrupt of that SPI instance                               |
+| `CONF_WINC_SPI_SS_PORT`              | value         | `GPIO_TypeDef*`                       | GPIO port of SS                                                   |
+| `CONF_WINC_SPI_SS_PIN`               | value         | `uint16`                              | GPIO pin of SS                                                    |
+| `CONF_WINC_SPI_BUS_ACQUIRE`          | function-like | `void (void)`                         | Blocks until the bus is free, then takes it                       |
+| `CONF_WINC_SPI_BUS_RELEASE`          | function-like | `void (void)`                         | Frees the bus                                                     |
+| `CONF_WINC_SPI_SYNC_PREPARE`         | function-like | `void (void)`                         | Clears the completion and error flags                             |
+| `CONF_WINC_SPI_SYNC_WAIT`            | function-like | `void (void)`                         | Blocks until the transfer completes or fails                      |
+| `CONF_WINC_SPI_SYNC_NOTIFY`          | function-like | `void (void)`                         | Signals success                                                   |
+| `CONF_WINC_SPI_SYNC_NOTIFY_ERR`      | function-like | `void (void)`                         | Signals failure                                                   |
+| `CONF_WINC_SPI_SYNC_ERR_STATUS`      | expression    | `int`                                 | Yields 1 when the last transfer failed                            |
+| `CONF_WINC_SPI_REGISTER_TX_ISR`      | function-like | `void (void (*)(SPI_HandleTypeDef*))` | Installs the TX handler                                           |
+| `CONF_WINC_SPI_REGISTER_RX_ISR`      | function-like | `void (void (*)(SPI_HandleTypeDef*))` | Installs the RX handler                                           |
+| `CONF_WINC_SPI_REGISTER_TX_RX_ISR`   | function-like | `void (void (*)(SPI_HandleTypeDef*))` | Installs the TX/RX handler                                        |
+| `CONF_WINC_SPI_REGISTER_ERROR_ISR`   | function-like | `void (void (*)(SPI_HandleTypeDef*))` | Installs the error handler                                        |
+| `CONF_WINC_SPI_DEREGISTER_TX_ISR`    | function-like | `void (void)`                         | Clears the TX handler                                             |
+| `CONF_WINC_SPI_DEREGISTER_RX_ISR`    | function-like | `void (void)`                         | Clears the RX handler                                             |
+| `CONF_WINC_SPI_DEREGISTER_TX_RX_ISR` | function-like | `void (void)`                         | Clears the TX/RX handler                                          |
+| `CONF_WINC_SPI_DEREGISTER_ERROR_ISR` | function-like | `void (void)`                         | Clears the error handler                                          |
+| `CONF_WINC_SPI_DMA_TX_HANDLE`        | object        | `DMA_HandleTypeDef`                   | DMA handle of the TX stream                                       |
+| `CONF_WINC_SPI_DMA_TX_INIT`          | function-like | `HAL_StatusTypeDef (void)`            | Initialises the TX stream                                         |
+| `CONF_WINC_SPI_DMA_TX_IRQN`          | value         | `IRQn_Type`                           | NVIC interrupt of that TX stream                                  |
+| `CONF_WINC_SPI_DMA_RX_HANDLE`        | object        | `DMA_HandleTypeDef`                   | DMA handle of the RX stream                                       |
+| `CONF_WINC_SPI_DMA_RX_INIT`          | function-like | `HAL_StatusTypeDef (void)`            | Initialises the RX stream                                         |
+| `CONF_WINC_SPI_DMA_RX_IRQN`          | value         | `IRQn_Type`                           | NVIC interrupt of that RX stream                                  |
+| `CONF_WINC_USE_I2C`                  | selector      | &mdash;                               | Non-SPI bus selection, rejected at compile time by the middleware |
+| `CONF_WINC_USE_UART`                 | selector      | &mdash;                               | Non-SPI bus selection, rejected at compile time by the middleware |
+
+Source: SAD §4.2, §6 (DEC-02); requirements: REQ-IF-05–11.
+
+### 4.4 Refined driver contract
+
+This view refines the vendor contract of the BPS and bus wrapper interfaces:
+for each element, the signature the vendor declares, the return code and the
+semantics the design subject realises, and the SRS requirements it meets:
+
+| Interface element        | Signature                                                       | Return code                                                | Semantics                                                                                                                                                                                                                                                                                                                                                  | Requirement                |
+|--------------------------|-----------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| `nm_bsp_init`            | `sint8 nm_bsp_init(void*)`                                      | `M2M_SUCCESS`                                              | Clears the driver callback, ensures the system clock, configures the control pins with IRQN on a falling edge with the internal pull-up, deregisters the EXTI callback, enables the IRQN interrupt, and drives the control pins low.                                                                                                                       | REQ-FUN-01–04              |
+| `nm_bsp_deinit`          | `sint8 nm_bsp_deinit(void)`                                     | `M2M_SUCCESS`                                              | Disables the IRQN NVIC line, deregisters the EXTI callback, and deinitialises the control pins.                                                                                                                                                                                                                                                            | REQ-FUN-05–06              |
+| `nm_bsp_reset`           | `void nm_bsp_reset(void)`                                       | &mdash;                                                    | Drives CHIP_EN and RESET_N low for 1 ms, raises CHIP_EN, waits 10 ms, then raises RESET_N.                                                                                                                                                                                                                                                                 | REQ-FUN-07–08              |
+| `nm_bsp_sleep`           | `void nm_bsp_sleep(uint32 u32TimeMsec)`                         | &mdash;                                                    | Calls `HAL_Delay` for the requested number of milliseconds.                                                                                                                                                                                                                                                                                                | REQ-FUN-09                 |
+| `nm_bsp_register_isr`    | `void nm_bsp_register_isr(tpfNmBspIsr pfIsr)`                   | &mdash;                                                    | Stores the callback and installs `irqn_on_irq` as the EXTI callback.                                                                                                                                                                                                                                                                                       | REQ-FUN-10                 |
+| `nm_bsp_interrupt_ctrl`  | `void nm_bsp_interrupt_ctrl(uint8 u8Enable)`                    | &mdash;                                                    | Enables the IRQN NVIC line at priority 0 when `u8Enable` is 1, and disables it when it is 0.                                                                                                                                                                                                                                                               | REQ-FUN-11                 |
+| `nm_bus_init`            | `sint8 nm_bus_init(void*)`                                      | `M2M_SUCCESS` or `M2M_ERR_BUS_FAIL`                        | Configures DMA when selected, forces the SPI configuration &mdash; master, two lines, 8-bit, clock polarity low, clock phase on the first edge, software slave select, most significant bit first, no CRC, prescaler 4 &mdash; registers the four SPI handlers, enables the SPI and DMA interrupts at priority 0, deasserts SS, then calls `nm_bsp_reset`. | REQ-FUN-12–19, REQ-PERF-01 |
+| `nm_bus_deinit`          | `sint8 nm_bus_deinit(void)`                                     | `M2M_SUCCESS`                                              | Deinitialises the SS pin and deregisters the SPI handlers, leaving the SPI and DMA interfaces untouched.                                                                                                                                                                                                                                                   | REQ-FUN-20–22              |
+| `nm_bus_ioctl`           | `sint8 nm_bus_ioctl(uint8 u8Cmd, void* pvParameter)`            | `M2M_SUCCESS`, `M2M_ERR_BUS_FAIL` or `M2M_ERR_INVALID_ARG` | Dispatches `NM_BUS_IOCTL_RW` to `nm_spi_rw`, and returns `M2M_ERR_INVALID_ARG` for any other command.                                                                                                                                                                                                                                                      | REQ-FUN-23–26              |
+| `nm_bus_reinit`          | `sint8 nm_bus_reinit(void* config)`                             | `M2M_SUCCESS`                                              | Empty stub; the driver makes no reference to it (DEC-03).                                                                                                                                                                                                                                                                                                  | &mdash;                    |
+| `nm_spi_rw`              | `sint8 nm_spi_rw(uint8* pu8Mosi, uint8* pu8Miso, uint16 u16Sz)` | `M2M_SUCCESS` or `M2M_ERR_BUS_FAIL`                        | Validates the size and buffers, acquires the bus, asserts SS, prepares the synchronisation mechanism, starts the transmit-only, receive-only or full-duplex transfer, waits, and on either outcome deasserts SS and releases the bus.                                                                                                                      | REQ-FUN-27–37              |
+| `egstrNmBusCapabilities` | `tstrNmBusCapabilities egstrNmBusCapabilities`                  | &mdash;                                                    | Advertises a maximum transfer size of 1024 bytes through `u16MaxTrxSz`; the limit is trusted, not enforced (DEC-05).                                                                                                                                                                                                                                       | REQ-PERF-02                |
+
+Source: SAD §4.2; requirements: SRS §3.1.1–§3.1.3, REQ-DES-01, REQ-DES-03.
+
+### 4.5 Bring-up
+
+This view shows the ordered steps that take the module from a powered-off board
+to a running module.
+
+![Bring-up view](diagrams/navy/bring-up.svg)
+
+Firmware boot and event servicing, once the bus is ready, are driver concerns
+and lie outside the design subject.
+
+Source: SAD §4.3; requirements: REQ-FUN-01–02, REQ-FUN-07–08, REQ-FUN-12–18.
+
+### 4.6 SPI transaction
+
+This view shows one `nm_spi_rw` transaction as ordered steps, together with the
+execution context in which the steps run.
+
+1. Validate the transfer: a size of zero, or both buffers NULL, is rejected
+   with `M2M_ERR_BUS_FAIL` before any bus access.
+2. Acquire the SPI bus through the porting interface.
+3. Assert SS.
+4. Prepare the synchronisation mechanism.
+5. Start the HAL transfer: transmit-only, receive-only or full-duplex, over DMA
+   or over interrupts according to `CONF_WINC_SPI_USE_DMA`.
+6. Wait for completion or failure.
+7. On failure, deassert SS, release the bus and return `M2M_ERR_BUS_FAIL`.
+8. On success, deassert SS, release the bus and return `M2M_SUCCESS`.
+
+The SPI peripheral is enabled during initialisation (§4.5), before the first
+SS assertion, as DEC-06 requires.
+
+Steps 1 to 6 run in thread context. The notifications that end the wait are
+raised from interrupt context; the middleware starts no transfer from an
+interrupt handler.
+
+Source: SAD §4.4, §6 (DEC-06); requirements: REQ-FUN-27–38, REQ-IF-08–09.
+
+### 4.7 Event delivery
+
+This view shows how module and SPI events reach the vendor driver, and where
+the middleware's participation in them ends.
+
+![Event delivery view](diagrams/navy/event-delivery.svg)
+
+Registration runs in thread context. `nm_bsp_register_isr` stores the driver
+callback and installs `irqn_on_irq`; `nm_bus_init` installs
+`spi_on_irq_success` for the transmit, receive and transmit-receive events, and
+`spi_on_irq_error` for the error event.
+
+The asynchronous path then runs entirely in interrupt context: `irqn_on_irq`
+filters on the IRQN pin and invokes the driver callback, while
+`spi_on_irq_success` and `spi_on_irq_error` filter on the SPI instance and
+signal success or failure through the porting interface.
+
+Source: SAD §4.5; requirements: REQ-FUN-10, REQ-FUN-16, REQ-FUN-38,
+REQ-IF-06–07.
+
+### 4.8 Module power lifecycle
+
+This view shows the states the module passes through under the design subject's
+control, and the transitions between them.
+
+![Module power lifecycle view](diagrams/navy/power-lifecycle.svg)
+
+Transfers are legal only in RUNNING, and the SPI transaction view (§4.6)
+assumes that state. Readiness polling after RESET_N rises, and all event
+servicing, are external to the design subject.
+
+Source: SAD §4.6; requirements: REQ-FUN-01–02, REQ-FUN-07–08, REQ-FUN-18.

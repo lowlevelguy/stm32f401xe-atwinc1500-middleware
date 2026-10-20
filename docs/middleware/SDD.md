@@ -30,12 +30,13 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 
 Change history:
 
-| Version | Date       | Description                                                                                |
-|---------|------------|--------------------------------------------------------------------------------------------|
-| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                |
-| 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns. |
-| 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                              |
-| 0.4     | 2026-10-20 | Section 4: design views.                                                                   |
+| Version | Date       | Description                                                                                                                      |
+|---------|------------|----------------------------------------------------------------------------------------------------------------------------------|
+| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                                                      |
+| 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns.                                       |
+| 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                                                                    |
+| 0.4     | 2026-10-20 | Section 4: design views.                                                                                                         |
+| 0.5     | 2026-10-20 | Section 4 errata: added missing "enable SPI" step in `nm_spi_rw` sequence; fixed reference in §4 to an inexisting table in §3.6. |
 
 ### 1.2 Purpose
 
@@ -255,7 +256,7 @@ contract view (§4.4).
 | Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Views governed                        | Porting interface view (§4.3); refined driver contract view (§4.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Views governed                        | Porting interface view (§4.3); refined driver contract view (§4.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Concerns framed                       | DCON-1 Adaptability; DCON-2 Non-intrusiveness; DCON-5 Traceability; DCON-6 Boundary hygiene                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Known stakeholders                    | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Design elements                       | The interface entity types: the driver-facing operations the middleware implements (`nm_bsp_*`, `nm_bus_*` and `nm_spi_rw`), the capabilities instance it advertises (`egstrNmBusCapabilities`), and the porting interface it consumes, the `CONF_WINC_*` configuration macros. Their attribute types: signature, return code, parameter semantics, and resource binding &mdash; the SPI instance, the DMA streams, the EXTI line and the GPIO pins. Their constraint types: the forced SPI configuration, manual Slave Select, the read/write-only driver interface, and the `u16MaxTrxSz` capability. |
@@ -334,7 +335,7 @@ SRS and SAD sources.
 ## 4. Design Views
 
 This section contains the design views of the middleware. Each view is governed
-by a design viewpoint, in accordance with §3.6's table, and closes with mention
+by a design viewpoint, as we already presented, and closes with mention
 of the SAD material it refines and the SRS requirements it must satisfy.
 
 ### 4.1 Decomposition
@@ -476,13 +477,14 @@ execution context in which the steps run.
 1. Validate the transfer: a size of zero, or both buffers NULL, is rejected
    with `M2M_ERR_BUS_FAIL` before any bus access.
 2. Acquire the SPI bus through the porting interface.
-3. Assert SS.
-4. Prepare the synchronisation mechanism.
-5. Start the HAL transfer: transmit-only, receive-only or full-duplex, over DMA
+3. Enable the SPI interface.
+4. Assert SS.
+5. Prepare the synchronisation mechanism.
+6. Start the HAL transfer: transmit-only, receive-only or full-duplex, over DMA
    or over interrupts according to `CONF_WINC_SPI_USE_DMA`.
-6. Wait for completion or failure.
-7. On failure, deassert SS, release the bus and return `M2M_ERR_BUS_FAIL`.
-8. On success, deassert SS, release the bus and return `M2M_SUCCESS`.
+7. Wait for completion or failure.
+8. On failure, deassert SS, release the bus and return `M2M_ERR_BUS_FAIL`.
+9. On success, deassert SS, release the bus and return `M2M_SUCCESS`.
 
 The SPI peripheral is enabled during initialisation (§4.5), before the first
 SS assertion, as DEC-06 requires.

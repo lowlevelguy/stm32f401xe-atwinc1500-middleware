@@ -17,15 +17,15 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 |--------------------------|----------------------------------------------------------------------------------------------------------|
 | Document title           | Software Design Description: STM32F401xE-WINC1500 Middleware                                             |
 | Document identifier      | SDD-MW-001                                                                                               |
-| Version                  | 0.1                                                                                                      |
+| Version                  | 0.3                                                                                                      |
 | Status                   | Draft                                                                                                    |
-| Date of issue            | 2026-10-13                                                                                               |
+| Date of issue            | 2026-10-20                                                                                               |
 | Author                   | lowlevelguy                                                                                              |
 | Reviewers                | None                                                                                                     |
 | Approving authority      | The author                                                                                               |
 | Issuing organisation     | Not applicable                                                                                           |
 | Configuration management | Version-controlled as a single file in this repository                                                   |
-| Governing standard       | IEEE 1016-2009                                                                                           |
+| Governing standard       | IEEE Std 1016-2009                                                                                       |
 | Upstream documents       | `SAD.md` (software architecture description, v1.0); `SRS.md` (software requirements specification, v1.0) |
 
 Change history:
@@ -34,6 +34,7 @@ Change history:
 |---------|------------|--------------------------------------------------------------------------------------------|
 | 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                |
 | 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns. |
+| 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                              |
 
 ### 1.2 Purpose
 
@@ -125,14 +126,15 @@ and interaction:
 
 ### 1.5 Document Structure
 
-The document follows the software design description content requirements of
-IEEE Std 1016-2009, Clause 4. The mapping is as follows; it covers the sections
-elaborated so far and will be extended as §3 to §5 are written.
+The document is structured following the software design description content
+requirements of IEEE Std 1016-2009, Clause 4; the mapping is as follows and is
+extended as §4 and §5 are written.
 
-| Section | Title                            | 1016-2009 clause |
-|---------|----------------------------------|------------------|
-| 1       | Identification and Overview      | 4.2              |
-| 2       | Design Stakeholders and Concerns | 4.3              |
+| Section | Title                            | IEEE Std 1016-2009 clause |
+|---------|----------------------------------|---------------------------|
+| 1       | Identification and Overview      | 4.2                       |
+| 2       | Design Stakeholders and Concerns | 4.3                       |
+| 3       | Design Viewpoints                | 4.5, 4.9                  |
 
 ### 1.6 References
 
@@ -148,25 +150,25 @@ elaborated so far and will be extended as §3 to §5 are written.
 
 ### 1.7 Glossary
 
-This glossary defines the IEEE 1016 design-description vocabulary used in this
-document. Project terms, including BSP, bus wrapper, porting interface and
-IRQN, are defined in SRS §1.4; architecture-description terms are defined in
-SAD §1.6 and are not repeated here.
+This glossary defines the IEEE Std 1016-2009 design-description vocabulary
+used in this document. Project terms, including BSP, bus wrapper, porting
+interface and IRQN, are defined in SRS §1.4; architecture-description terms
+are defined in SAD §1.6 and are not repeated here.
 
-| Term                | Meaning                                                                                                                                      |
-|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| Design attribute    | A characteristic or property of a design entity, relationship or constraint.                                                                 |
-| Design concern      | An area of interest with respect to a software design.                                                                                       |
-| Design constraint   | A rule or restriction imposed on a design entity, attribute or relationship.                                                                 |
-| Design element      | An item in a design view: a design entity, relationship, attribute or constraint.                                                            |
-| Design entity       | A structurally, functionally or otherwise distinct element of a design, or one that plays a distinct role relative to other design entities. |
-| Design overlay      | A representation of additional, detailed or derived design information organised with reference to an existing design view.                  |
-| Design rationale    | Information capturing the reasoning that led to the design, including options, trade-offs, decisions and their justifications.               |
-| Design relationship | A connection or correspondence between design entities.                                                                                      |
-| Design stakeholder  | An individual, organisation or group having an interest in, or design concerns relative to, the design of a software item.                   |
-| Design subject      | The middleware described by this SDD. IEEE Std 1016-2009 uses this term in its design vocabulary.                                            |
-| Design view         | A representation comprising design elements that addresses concerns from a specified design viewpoint.                                       |
-| Design viewpoint    | The specification of the elements and conventions available for constructing and using a design view.                                        |
+| Term                | Meaning                                                                                                                                                               |
+|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Design attribute    | A characteristic or property of a design entity, relationship or constraint.                                                                                          |
+| Design concern      | An area of interest with respect to a software design.                                                                                                                |
+| Design constraint   | A rule or restriction imposed on a design entity, attribute or relationship.                                                                                          |
+| Design element      | An item in a design view: a design entity, relationship, attribute or constraint.                                                                                     |
+| Design entity       | A structurally, functionally or otherwise distinct element of a design view, or one that plays a different role relative to other design entities.                    |
+| Design overlay      | A representation of additional, detailed or derived design information organised with reference to an existing design view.                                           |
+| Design rationale    | Information capturing the reasoning that led to the design, including options, trade-offs, decisions and their justifications.                                        |
+| Design relationship | A connection or correspondence between design entities.                                                                                                               |
+| Design stakeholder  | An individual, organisation or group (or classes thereof playing the same role) having an interest in, or design concerns relative to, the design of a software item. |
+| Design subject      | The middleware described by this SDD. IEEE Std 1016-2009 uses this term in its design vocabulary.                                                                     |
+| Design view         | A representation comprising design elements that addresses concerns from a specified design viewpoint.                                                                |
+| Design viewpoint    | The specification of the elements and conventions available for constructing and using a design view.                                                                 |
 
 ## 2. Design Stakeholders and Concerns
 
@@ -199,8 +201,8 @@ section was left unaddressed on its account.
 
 ### 2.2 Design Concerns
 
-Six design concerns are identified. Each concern is presented along with
-statement, the shareholders that behold it, and the source that grounds it.
+Six design concerns are identified. Each concern is presented along with its
+statement, the stakeholders that hold it, and the source that grounds it.
 
 The concerns presented are identical to those identified in SAD §2.3. Their
 statements are sometimes slightly modified to adapt to the purposes of design,
@@ -215,3 +217,114 @@ intact.
 | DCON-4 | Host verifiability | Conformance to the SRS must be demonstrable by the host-executed verification methods of SRS §4, without on-target hardware.                                                                                                       | STK-2        | SRS §4                               |
 | DCON-5 | Traceability       | Design claims that address an SRS requirement or architectural element must identify it, so that changes expose the affected views; the design may constrain choices the SRS and SAD leave open, but it may not contradict either. | STK-2        | §1.2                                 |
 | DCON-6 | Boundary hygiene   | The middleware must only perform byte transport and transaction framing; all protocol semantics must remain owned by the vendor driver.                                                                                            | STK-2        | SAD §4.7                             |
+
+## 3. Design Viewpoints
+
+This section specifies the four design viewpoints that govern the views of
+§4. Each specification states the views it governs, its version, the concerns
+it frames together with the known stakeholders, the design elements and design
+languages available to it, its correspondence and evaluation methods, and its
+sources. The design languages are defined once in §3.5 and are
+forward-referenced by the viewpoints.
+
+### 3.1 Structure and decomposition
+
+This viewpoint considers the design subject as parts and the ownership
+boundaries it keeps. It governs the decomposition view (§4.1) and the protocol
+semantics boundary view (§4.2).
+
+| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Views governed                        | Decomposition view (§4.1); protocol semantics boundary view (§4.2)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Concerns framed                       | DCON-1 Adaptability; DCON-2 Non-intrusiveness; DCON-5 Traceability; DCON-6 Boundary hygiene                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Known stakeholders                    | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Design elements                       | The design entity types of the board and transport abstraction layer: the BSP implementation unit (`nm_bsp_stm32f401xe.c`) and the bus-wrapper implementation unit (`nm_bus_wrapper_stm32f401xe.c`), and their functions (the `nm_bsp_*` and `nm_bus_*` operations, together with their private helpers). The design relationship types that connect them to one another, to the vendor driver and to the porting interface: decomposition (part-of), provides, requires and ownership.                 |
+| Design languages                      | Structured English prose; and the block diagram notation of SAD §3.4, incorporated by reference and reused verbatim where a view embeds one (§3.5).                                                                                                                                                                                                                                                                                                                                                     |
+| Correspondence and evaluation methods | Decomposition consistency, by inspection: the design entities shown as composing the design subject, and the ownership they keep with the vendor driver, agree across the views of this viewpoint. SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The views of this viewpoint are interpreted by inspection; no formal analysis method is defined. |
+| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SAD §4.2 and §4.7 for the architecture this design refines; SRS §1.3.2 and §3.5 for the parts of the design subject and the constraints on them.                                                                                                                                                                                                                                                                                                                 |
+
+### 3.2 Contracts
+
+This viewpoint considers the contracts the design subject implements, consumes
+or defines. It governs the porting interface view (§4.3) and the driver-facing
+contract view (§4.4).
+
+| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Views governed                        | Porting interface view (§4.3); driver-facing contract view (§4.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Concerns framed                       | DCON-1 Adaptability; DCON-2 Non-intrusiveness; DCON-5 Traceability; DCON-6 Boundary hygiene                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Known stakeholders                    | STK-1 Integrator; STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Design elements                       | The interface entity types: the driver-facing operations the middleware implements (`nm_bsp_*`, `nm_bus_*` and `nm_spi_rw`), the capabilities instance it advertises (`egstrNmBusCapabilities`), and the porting interface it consumes, the `CONF_WINC_*` configuration macros, bound in the host-executed tests to the `mw_port_*` operations. Their attribute types: signature, return code, parameter semantics, and resource binding &mdash; the SPI instance, the DMA streams, the EXTI line and the GPIO pins. Their constraint types: the forced SPI configuration, manual Slave Select, the read/write-only driver interface, and the `u16MaxTrxSz` capability. |
+| Design languages                      | Structured English prose; the interface-contract table notation (§3.5); and the block diagram notation of SAD §3.4, incorporated by reference and reused verbatim where a view embeds one.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Correspondence and evaluation methods | Interface consistency, by inspection: each operation appears in every view in which it occurs with the same signature, return code and semantics. SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The views of this viewpoint are interpreted by inspection; no formal analysis method is defined.                                                                                                                                                                                                                  |
+| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SRS §3.1 and §3.4 for the interface inventory; SAD §4.2 for the architectural contracts this design refines, and §6 (DEC-02) for the porting interface as compile-time hooks.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+### 3.3 Interaction
+
+This viewpoint considers the design subject as behaviour ordered in time. It
+governs the bring-up view (§4.5), the SPI transaction view (§4.6) and the
+event delivery view (§4.7).
+
+| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Views governed                        | Bring-up view (§4.5); SPI transaction view (§4.6); event delivery view (§4.7)                                                                                                                                                                                                                                                                                                                                                              |
+| Concerns framed                       | DCON-3 Concurrency safety; DCON-4 Host verifiability; DCON-5 Traceability                                                                                                                                                                                                                                                                                                                                                                  |
+| Known stakeholders                    | STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Design elements                       | The interaction types invocation and notification; their attribute types: execution context (thread or interrupt), ordering, and the synchronisation point at which a wait ends; and their constraint types: notifications originate only in interrupt context; blocking waits occur only in thread context; and the bus is released on both completion and failure.                                                                       |
+| Design languages                      | Structured English prose; and the sequence diagram notation of SAD §3.4, incorporated by reference and reused verbatim where a view embeds one.                                                                                                                                                                                                                                                                                            |
+| Correspondence and evaluation methods | Context consistency, by inspection: the thread or interrupt annotation of each interaction agrees across the views of this viewpoint. SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The views of this viewpoint are interpreted by inspection; no formal analysis method is defined. |
+| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SRS §3.1.3 for synchronisation and bus ownership; the ATWINC1500 19.7.11 software API reference manual for call semantics; SAD §4.3–§4.5 for the architectural interactions this design refines.                                                                                                                                                                                                    |
+
+### 3.4 State dynamics
+
+This viewpoint considers the design subject's modes and the reactions to events
+that move it between them. It governs the module power lifecycle view (§4.8).
+
+| Field                                 | Specification                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version                               | 1.0                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Views governed                        | Module power lifecycle view (§4.8)                                                                                                                                                                                                                                                                                                                                                                                               |
+| Concerns framed                       | DCON-3 Concurrency safety; DCON-4 Host verifiability; DCON-5 Traceability                                                                                                                                                                                                                                                                                                                                                        |
+| Known stakeholders                    | STK-2 Maintainer and verifier                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Design elements                       | The entity types state, transition and event (trigger); the attribute type initial state; and the constraint types: guard conditions, such as the condition that transfers are legal only while the module is running.                                                                                                                                                                                                           |
+| Design languages                      | Structured English prose; the state machine diagram notation of SAD §3.4, incorporated by reference and reused verbatim where the view embeds one; and the state-transition table notation (§3.5).                                                                                                                                                                                                                               |
+| Correspondence and evaluation methods | Lifecycle consistency, by inspection: the states in which SPI transfers are legal agree with the SPI transaction view (§4.6). SRS consistency: claims related to SRS material are checked for contradiction; design refinements of choices left open by the SRS are permitted; the resulting design decisions are recorded in §5. The view of this viewpoint is interpreted by inspection; no formal analysis method is defined. |
+| Sources                               | IEEE Std 1016-2009, Clauses 4.5 and 5; SRS §3.1.1 for the BSP's power-control and interrupt-management behaviour; SAD §4.6 for the architectural lifecycle this design refines; the ATWINC1500 module datasheet for the reset timing.                                                                                                                                                                                            |
+
+### 3.5 Design languages
+
+The viewpoints above use three design languages.
+
+- English prose is the default: ordering, constraints and rationales are
+  stated in sentences, using the identifiers of §2 and of the source code.
+
+- Tabulars record one design element per row, with the header row naming the
+  properties recorded in the columns below it.
+
+- Diagrams are the block diagram, sequence diagram and state machine diagram
+  notations of SAD §3.4, imported by reference and not restated; the views of
+  §4 reuse them verbatim wherever one depicts the design unchanged, so their
+  conventions remain those of §3.4.
+
+The conventions of a language are the legend for every view component that
+uses it; the reading notes of §4, where present, add view-specific guidance
+but do not override them.
+
+### 3.6 Coverage
+
+Every design concern is framed by at least one viewpoint; the matrix below
+records it, with a row per concern and a column per viewpoint. DCON-5 is
+framed by every viewpoint: every view makes claims that must identify their
+SRS and SAD sources.
+
+|        | 3.1 Structure and decomposition | 3.2 Contracts | 3.3 Interaction | 3.4 State dynamics |
+|--------|---------------------------------|---------------|-----------------|--------------------|
+| DCON-1 | yes                             | yes           | &mdash;         | &mdash;            |
+| DCON-2 | yes                             | yes           | &mdash;         | &mdash;            |
+| DCON-3 | &mdash;                         | &mdash;       | yes             | yes                |
+| DCON-4 | &mdash;                         | &mdash;       | yes             | yes                |
+| DCON-5 | yes                             | yes           | yes             | yes                |
+| DCON-6 | yes                             | yes           | &mdash;         | &mdash;            |

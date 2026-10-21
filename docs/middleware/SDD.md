@@ -17,9 +17,9 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 |--------------------------|----------------------------------------------------------------------------------------------------------|
 | Document title           | Software Design Description: STM32F401xE-WINC1500 Middleware                                             |
 | Document identifier      | SDD-MW-001                                                                                               |
-| Version                  | 0.4                                                                                                      |
+| Version                  | 0.6                                                                                                      |
 | Status                   | Draft                                                                                                    |
-| Date of issue            | 2026-10-20                                                                                               |
+| Date of issue            | 2026-10-21                                                                                               |
 | Author                   | lowlevelguy                                                                                              |
 | Reviewers                | None                                                                                                     |
 | Approving authority      | The author                                                                                               |
@@ -37,6 +37,14 @@ Change history:
 | 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                                                                    |
 | 0.4     | 2026-10-20 | Section 4: design views.                                                                                                         |
 | 0.5     | 2026-10-20 | Section 4 errata: added missing "enable SPI" step in `nm_spi_rw` sequence; fixed reference in §4 to an inexisting table in §3.6. |
+| Version | Date       | Description                                                                                                                                                                                                    |
+|---------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                                                                                                                                    |
+| 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns.                                                                                                                     |
+| 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                                                                                                                                                  |
+| 0.4     | 2026-10-20 | Section 4: design views.                                                                                                                                                                                       |
+| 0.5     | 2026-10-20 | Section 4 errata: added missing "enable SPI" step in `nm_spi_rw` sequence; fixed reference in §4 to an inexisting table in §3.6.                                                                               |
+| 0.6     | 2026-10-21 | Section 4 errata: §4.6: fixed "Step 1 to 6" to become "Step 1 to 7" and removed incorrect sentence about SPI enabling placement, added mention of optional WAKE pin; §4.4: added mention of optional WAKE pin. |
 
 ### 1.2 Purpose
 
@@ -444,7 +452,7 @@ semantics the design subject realises, and the SRS requirements it meets:
 |--------------------------|-----------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
 | `nm_bsp_init`            | `sint8 nm_bsp_init(void*)`                                      | `M2M_SUCCESS`                                              | Clears the driver callback, ensures the system clock, configures the control pins with IRQN on a falling edge with the internal pull-up, deregisters the EXTI callback, enables the IRQN interrupt, and drives the control pins low.                                                                                                                       | REQ-FUN-01–04              |
 | `nm_bsp_deinit`          | `sint8 nm_bsp_deinit(void)`                                     | `M2M_SUCCESS`                                              | Disables the IRQN NVIC line, deregisters the EXTI callback, and deinitialises the control pins.                                                                                                                                                                                                                                                            | REQ-FUN-05–06              |
-| `nm_bsp_reset`           | `void nm_bsp_reset(void)`                                       | &mdash;                                                    | Drives CHIP_EN and RESET_N low for 1 ms, raises CHIP_EN, waits 10 ms, then raises RESET_N.                                                                                                                                                                                                                                                                 | REQ-FUN-07–08              |
+| `nm_bsp_reset`           | `void nm_bsp_reset(void)`                                       | &mdash;                                                    | Drives CHIP_EN and RESET_N low for 1 ms, raises CHIP_EN, waits 10 ms, then raises RESET_N; WAKE, when enabled, is driven low with CHIP_EN and RESET_N and raised with RESET_N.                                                                                                                                                                             | REQ-FUN-07–08              |
 | `nm_bsp_sleep`           | `void nm_bsp_sleep(uint32 u32TimeMsec)`                         | &mdash;                                                    | Calls `HAL_Delay` for the requested number of milliseconds.                                                                                                                                                                                                                                                                                                | REQ-FUN-09                 |
 | `nm_bsp_register_isr`    | `void nm_bsp_register_isr(tpfNmBspIsr pfIsr)`                   | &mdash;                                                    | Stores the callback and installs `irqn_on_irq` as the EXTI callback.                                                                                                                                                                                                                                                                                       | REQ-FUN-10                 |
 | `nm_bsp_interrupt_ctrl`  | `void nm_bsp_interrupt_ctrl(uint8 u8Enable)`                    | &mdash;                                                    | Enables the IRQN NVIC line at priority 0 when `u8Enable` is 1, and disables it when it is 0.                                                                                                                                                                                                                                                               | REQ-FUN-11                 |
@@ -463,6 +471,10 @@ This view shows the ordered steps that take the module from a powered-off board
 to a running module.
 
 ![Bring-up view](diagrams/navy/bring-up.svg)
+
+WAKE is not part of the sequence the module requires, so the diagram omits it;
+when the pin is enabled, it is driven low with CHIP_EN and RESET_N and raised
+with RESET_N (DEC-01, DDEC-08).
 
 Firmware boot and event servicing, once the bus is ready, are driver concerns
 and lie outside the design subject.
@@ -486,10 +498,7 @@ execution context in which the steps run.
 8. On failure, deassert SS, release the bus and return `M2M_ERR_BUS_FAIL`.
 9. On success, deassert SS, release the bus and return `M2M_SUCCESS`.
 
-The SPI peripheral is enabled during initialisation (§4.5), before the first
-SS assertion, as DEC-06 requires.
-
-Steps 1 to 6 run in thread context. The notifications that end the wait are
+Steps 1 to 7 run in thread context. The notifications that end the wait are
 raised from interrupt context; the middleware starts no transfer from an
 interrupt handler.
 

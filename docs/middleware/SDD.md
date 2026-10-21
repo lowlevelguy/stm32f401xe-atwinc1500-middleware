@@ -1,5 +1,5 @@
 # Software Design Description: STM32F401xE-WINC1500 Middleware
-Version 0.1.
+Version 1.0.
 
 ## 1. Identification and Overview
 
@@ -17,7 +17,7 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 |--------------------------|----------------------------------------------------------------------------------------------------------|
 | Document title           | Software Design Description: STM32F401xE-WINC1500 Middleware                                             |
 | Document identifier      | SDD-MW-001                                                                                               |
-| Version                  | 0.6                                                                                                      |
+| Version                  | 1.0                                                                                                      |
 | Status                   | Draft                                                                                                    |
 | Date of issue            | 2026-10-21                                                                                               |
 | Author                   | lowlevelguy                                                                                              |
@@ -30,13 +30,6 @@ the software architecture description (`SAD.md`, v1.0) of the same middleware.
 
 Change history:
 
-| Version | Date       | Description                                                                                                                      |
-|---------|------------|----------------------------------------------------------------------------------------------------------------------------------|
-| 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                                                      |
-| 0.2     | 2026-10-17 | Document structure addendum to section 1, and section 2: design stakeholders and concerns.                                       |
-| 0.3     | 2026-10-20 | Section 3: design viewpoints.                                                                                                    |
-| 0.4     | 2026-10-20 | Section 4: design views.                                                                                                         |
-| 0.5     | 2026-10-20 | Section 4 errata: added missing "enable SPI" step in `nm_spi_rw` sequence; fixed reference in §4 to an inexisting table in §3.6. |
 | Version | Date       | Description                                                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.1     | 2026-10-16 | Initial draft (frontispiece and Section 1).                                                                                                                                                                    |
@@ -45,6 +38,7 @@ Change history:
 | 0.4     | 2026-10-20 | Section 4: design views.                                                                                                                                                                                       |
 | 0.5     | 2026-10-20 | Section 4 errata: added missing "enable SPI" step in `nm_spi_rw` sequence; fixed reference in §4 to an inexisting table in §3.6.                                                                               |
 | 0.6     | 2026-10-21 | Section 4 errata: §4.6: fixed "Step 1 to 6" to become "Step 1 to 7" and removed incorrect sentence about SPI enabling placement, added mention of optional WAKE pin; §4.4: added mention of optional WAKE pin. |
+| 1.0     | 2026-10-21 | Section 5: design rationale.                                                                                                                                                                                   |
 
 ### 1.2 Purpose
 
@@ -137,8 +131,7 @@ and interaction:
 ### 1.5 Document Structure
 
 The document is structured following the software design description content
-requirements of IEEE Std 1016-2009, Clause 4; the mapping is as follows and is
-extended as §5 is written.
+requirements of IEEE Std 1016-2009, Clause 4; the mapping is as follows.
 
 | Section | Title                            | IEEE Std 1016-2009 clause |
 |---------|----------------------------------|---------------------------|
@@ -146,6 +139,7 @@ extended as §5 is written.
 | 2       | Design Stakeholders and Concerns | 4.3                       |
 | 3       | Design Viewpoints                | 4.5, 4.9                  |
 | 4       | Design Views                     | 4.4, 4.6                  |
+| 5       | Design Rationale                 | 4.8                       |
 
 ### 1.6 References
 
@@ -536,3 +530,22 @@ assumes that state. Readiness polling after RESET_N rises, and all event
 servicing, are external to the design subject.
 
 Source: SAD §4.6; requirements: REQ-FUN-01–02, REQ-FUN-07–08, REQ-FUN-18.
+
+## 5. Design Rationale
+
+This section records the design decisions that the SRS and the SAD leave open.
+Decisions that the SRS encodes as requirements, or that the SAD records as
+architecture decisions, stay in those documents and are not repeated here.
+
+Eight such decisions are identified.
+
+| ID      | Decision                                                                                                                                                                       | Rationale and traceability                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DDEC-01 | `egstrNmBusCapabilities.u16MaxTrxSz` is set to 1024 bytes.                                                                                                                     | A capability of at least 16 bytes satisfies REQ-PERF-02, and 1024 is a round kibibyte; no further criterion applies. The driver subtracts its eight-byte transaction header and chunks any request above 1016 bytes into 1016-byte pieces, so the value sets the granularity of the driver's chunking rather than a limit the middleware enforces, as DEC-05 requires. DCON-6.                                                                                                                    |
+| DDEC-02 | The NVIC interrupt for IRQN is enabled during BSP initialisation, not at callback registration; `nm_bsp_register_isr` stores the driver's callback and installs `irqn_on_irq`. | The driver registers its callback later in the bring-up, so enabling the interrupt at initialisation leaves registration nothing to configure. An edge that arrives earlier finds the EXTI dispatcher deregistered, as REQ-FUN-03 requires, and has no effect; afterwards, `irqn_on_irq` discards an edge that finds a null driver callback. DCON-3.                                                                                                                                              |
+| DDEC-03 | `nm_bsp_init` configures the system clock only when SysTick is not already enabled and ticking; the peripheral clocks are enabled unconditionally.                             | If the integrator has already brought the system clock and its time base up, the middleware leaves them in place and does not disturb timing that the application owns; where no time base runs, the middleware must establish the clock itself, or its delays have no defined length. Enabling a peripheral clock that is already gated on is idempotent, so those enables need no condition. DCON-2.                                                                                            |
+| DDEC-04 | Neither the DMA streams nor the SPI peripheral is explicitly stopped before reconfiguration; the design relies on the initialisation routines to stop them.                    | `HAL_DMA_Init` disables the stream and waits for its enable bit to clear, and `HAL_SPI_Init` disables the peripheral itself, so an explicit stop adds nothing. `HAL_DMA_Abort` would instead report an error whenever the stream is idle, turning a normal path into a failure path. The validation and self-healing that REQ-FUN-14 requires thus need no abort step. DCON-2.                                                                                                                    |
+| DDEC-05 | The SPI prescaler is fixed at 4, although a prescaler of 2 would already satisfy REQ-PERF-01.                                                                                  | Halving the bus clock relative to a prescaler of 2 trades transfer bandwidth for a lower edge rate, and with it less emission on the SPI lines. Transfers are small and paced by the driver, so the bandwidth given up is not needed, and no further criterion fixes the value above 4. REQ-PERF-01 sets only a ceiling and so does not select the value. DCON-5.                                                                                                                                 |
+| DDEC-06 | Every interrupt the middleware manages is assigned NVIC priority 0.                                                                                                            | The SRS requires the SPI, DMA and IRQN interrupts to be enabled (REQ-FUN-11, REQ-FUN-15, REQ-FUN-16) but fixes no priority. One level for all of them means that no middleware interrupt pre-empts another and every completion notification is serviced at the lowest latency the design can offer. Nothing in the middleware depends on that value, so an integrator whose own interrupts have stricter deadlines can assign the middleware a numerically higher, less urgent priority. DCON-2. |
+| DDEC-07 | The driver's ISR callback is replaced by a single aligned 32-bit store, without a critical section.                                                                            | The callback pointer is written by the thread that registers it and read by the interrupt handler. On the target, an aligned 32-bit store is atomic, so the pointer needs only volatile qualification; a critical section would mask interrupts to exclude a tear that cannot occur. DCON-3.                                                                                                                                                                                                      |
+| DDEC-08 | The WAKE signal is driven low with CHIP_EN and RESET_N while the module is held in reset, and high with RESET_N when it is released.                                           | The position of WAKE in the reset sequence is left open by DEC-01, and the firmware version of interest does not use the signal. Tying WAKE to the signal that ends the sequence gives it a definite position without asserting a requirement; the pin is compile-time gated, so the choice is inert until WAKE is enabled. DCON-5.                                                                                                                                                               |
